@@ -1,2 +1,2 @@
 # music-player
-Standalone music player with no bloat and custom features
+Standalone music player with custom features and no bloat
