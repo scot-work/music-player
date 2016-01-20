@@ -1,0 +1,10 @@
+<html>
+<head>
+<title>Delete Performer</title>
+</head>
+<body>
+    <form method = "POST" action = "{{ url_for('deletePerformer', performer_id = performer.id) }}">
+        <input type="submit" value="Delete {{ performer.name }}?" />
+    </form>
+</body>
+</html>

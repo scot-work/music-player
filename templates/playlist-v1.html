@@ -1,0 +1,40 @@
+<html>
+<head>
+    <script>
+    var now_playing = 0;
+    var playlist = {{ data|tojson|safe }};
+
+    function play_track() {
+
+        //myAudio.currentTime = 0;
+        audio_element = document.getElementById("audio");
+        playing_element = document.getElementById("playing");
+        playing_element.innerHTML = playlist[now_playing].name;
+        path = playlist[now_playing].path;
+        now_playing++;
+        if (now_playing <= playlist.length) {
+            console.log("playing track " + now_playing);
+            track_url = "{{ url_for('static', filename = 'Music/iTunes/iTunes Music/They Might Be Giants/Apollo 18/17 Fingertips.mp3') }}";
+            // audio_element.src = "file://" + path;
+            audio_element.src = track_url;
+            console.log("playing " + path);
+        // setTimeout(function(){audio_element.play()}, 1000);
+            audio_element.play();
+            console.log("done playing")
+        }
+        //for( var i = 0; i < playlist.length; i++ ) {
+        //    var track = playlist[i].path;
+        //    alert(playlist[i].name);
+        //}
+    }
+
+</script>
+</head>
+<body onload = "play_track()">
+    <h1>Music Player Test</h1>
+    <img src="{{ url_for('static', filename = 'sails.jpg') }}" />
+    <div id="playing">Now playing:</div>
+    <audio controls id="audio" onended="play_track()" />
+
+</body>
+</html>
