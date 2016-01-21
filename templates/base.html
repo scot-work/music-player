@@ -1,0 +1,20 @@
+<!doctype html>
+<html>
+<head>
+    <style>
+        .top-navigation li { display: inline; font-weight: bold; font-family: sans-serif;}
+    </style>
+    {% block head %}
+    {% endblock %}
+</head>
+<body {% block onload %} {% endblock %}>
+    <ul class = "top-navigation">
+        <li><a href = "{{ url_for('home') }}">Home</a></li>
+        <li><a href = "{{ url_for('listPerformers') }}">Performers</a></li>
+        <li><a href = "{{ url_for('browseFiles') }}">Browse</a></li>
+        <li><a href = "#">Playlists</a></li>
+    </ul>
+    {% block body %}
+    {% endblock %}
+</body>
+</html>

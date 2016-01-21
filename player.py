@@ -2,7 +2,9 @@ from flask import Flask, render_template, request, redirect, url_for
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from database_setup import Base, Track, Performer
+import os
 import json
+import string
 
 app = Flask(__name__)
 
@@ -57,7 +59,6 @@ def newPerformer():
         return redirect(url_for('listPerformers'))
     else:
         return render_template('newPerformer.html')
-    pass
 
 @app.route('/performer/<int:performer_id>/delete/', methods=['GET', 'POST'])
 def deletePerformer(performer_id):
@@ -72,6 +73,47 @@ def deletePerformer(performer_id):
         return render_template(
             'deletePerformer.html', performer = performerToDelete)
 
+# Browse file system
+@app.route('/browse/')
+def browseFiles():
+    path = request.args.get('path')
+    if not path:
+        path = '/'
+    print("path in browseFilse is: " + path)
+    file_list = os.listdir(path)
+    path_components = string.split(path, '/')
+    return render_template('browseFiles.html',
+        current_path = path,
+        files = file_list,
+        path_components = path_components,
+        working_path = '/')
+
+def showAsLink(path, file):
+    if not file.startswith('.'):
+        if os.path.isdir(path + '/' + file):
+            return True
+        else:
+            #print("not a dir: " + path + '/' + file)
+            return False
+    else:
+        return False
+app.jinja_env.filters['showAsLink'] = showAsLink
+
+def showAsFile(file):
+    if file.endswith('.mp3'):
+        return True
+    else:
+        return False
+app.jinja_env.filters['showAsFile'] = showAsFile
+
+def isNotEmptyString(s):
+    if s:
+        return True
+    else:
+        return False
+app.jinja_env.filters['isNotEmptyString'] = isNotEmptyString
+
 if __name__ == '__main__':
     app.debug = True
     app.run(host = '0.0.0.0', port = 5000)
+

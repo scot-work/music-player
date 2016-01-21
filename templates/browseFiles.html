@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+<!doctype html>
+<html>
+<head>
+    {% block head %}
+    <title>Browse</title>
+    <script>
+     // Play the first track
+    function play_track(path) {
+        // Need to remove /Users/scotclose//Development/music_player/dev from head of path
+        path_start = path.indexOf('/iTunes');
+        local_path = '/static' + path.substring(path_start);
+        audio_element = document.getElementById("audio");
+        audio_element.src = local_path;
+        audio_element.play();
+    }
+    </script>
+    {% endblock %}
+</head>
+<body>
+    <h1>Files in {{ current_path }}/</h1>
+    {% block body %}
+    <p>
+    {% for dir in path_components -%}
+        {% if dir|isNotEmptyString %}
+            {% set working_path = working_path + dir + '/' %}
+            / <a href="{{ url_for('browseFiles', path = working_path) }}">{{ dir }}</a>
+        {% endif %}
+    {%- endfor %}
+    </p>
+    <ul>
+    {% for file in files %}
+        {% if current_path|showAsLink(file) %}
+        <li><a href="{{ url_for('browseFiles', path = current_path + '/' + file ) }}">{{ file }}</a></li>
+        {% endif %}
+        {% if file|showAsFile %}
+        <li>{{ file }}&nbsp;<a href='javascript:play_track("{{ current_path }}/{{ file }}");'>Play</a></li>
+        {% endif %}
+    {% endfor %}
+    </ul>
+    <audio controls id="audio" ></audio>
+    {% endblock %}
+</body>
+</html>

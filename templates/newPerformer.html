@@ -1,8 +1,12 @@
+{% extends "base.html" %}
+<!doctype html>
 <html>
 <head>
 <title>New Performer</title>
 </head>
 <body>
+    {% block body %}
+    <h1>New Performer</h1>
     <form action="{{ url_for('newPerformer') }}" method="post">
         <p><label for = "name">Name:</label>
         <input type = "text" name = "name" id = "name" /></p>
@@ -10,5 +14,6 @@
         <input type = "text" name="sort_name" id="sort_name" /></p>
         <input type = "submit" value = "Submit" />
     </form>
+    {% endblock %}
 </body>
 </html>

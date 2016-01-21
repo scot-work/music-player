@@ -1,11 +1,14 @@
+{% extends "base.html" %}
+<!doctype html>
 <html>
 <head>
 </head>
-<body >
-    <h1>Music Player</h1>
+<body>
+    {% block body %}
     <ul>
         <li><a href="{{ url_for('playlist') }}">Playlists</a></li>
         <li><a href="{{ url_for('listPerformers') }}">Performers</a></li>
     </ul>
+    {% endblock %}
 </body>
 </html>

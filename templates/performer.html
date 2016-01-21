@@ -1,7 +1,8 @@
+{% extends "base.html" %}
+<!doctype html>}
 <html>
-
 <body>
-
+{% block body %}
 <h1>Performers</h1>
 <p><a href="{{ url_for('newPerformer') }}">New</a></p>
 
@@ -17,6 +18,7 @@ Edit <a href="{{ url_for('deletePerformer', performer_id = i.id) }}">Delete</a>
 
 
 {% endfor %}
+{% endblock %}
 </body>
 
 </html>

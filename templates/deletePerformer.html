@@ -1,10 +1,14 @@
+{% extends "base.html" %}
+<!doctype html>
 <html>
 <head>
 <title>Delete Performer</title>
 </head>
 <body>
+    {% block body %}
     <form method = "POST" action = "{{ url_for('deletePerformer', performer_id = performer.id) }}">
         <input type="submit" value="Delete {{ performer.name }}?" />
     </form>
+    {% endblock %}
 </body>
 </html>
