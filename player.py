@@ -78,7 +78,7 @@ def deletePerformer(performer_id):
 def browseFiles():
     path = request.args.get('path')
     if not path:
-        path = '/'
+        path = '/Users/scotclose/Development/repositories/music-player/static'
     print("path in browseFilse is: " + path)
     file_list = os.listdir(path)
     path_components = string.split(path, '/')

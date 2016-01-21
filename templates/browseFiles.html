@@ -8,8 +8,10 @@
      // Play the first track
     function play_track(path) {
         // Need to remove /Users/scotclose//Development/music_player/dev from head of path
-        path_start = path.indexOf('/iTunes');
-        local_path = '/static' + path.substring(path_start);
+        path_start = path.indexOf('/static');
+        local_path = path.substring(path_start);
+        console.log("actual path: " + path);
+        console.log("local path: " + local_path);
         audio_element = document.getElementById("audio");
         audio_element.src = local_path;
         audio_element.play();
