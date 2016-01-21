@@ -36,7 +36,8 @@
         <li><a href="{{ url_for('browseFiles', path = current_path + '/' + file ) }}">{{ file }}</a></li>
         {% endif %}
         {% if file|showAsFile %}
-        <li>{{ file }}&nbsp;<a href='javascript:play_track("{{ current_path }}/{{ file }}");'>Play</a></li>
+        <li>{{ file }}&nbsp;<a href='javascript:play_track("{{ current_path }}/{{ file }}");'>Play</a>
+            <a href="{{ url_for('trackInfo', path = current_path + '/' + file) }}">Info</a></li>
         {% endif %}
     {% endfor %}
     </ul>

@@ -2,6 +2,8 @@ from flask import Flask, render_template, request, redirect, url_for
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from database_setup import Base, Track, Performer
+from mutagen.mp3 import MP3
+from mutagen.easyid3 import EasyID3
 import os
 import json
 import string
@@ -60,6 +62,7 @@ def newPerformer():
     else:
         return render_template('newPerformer.html')
 
+# Delete a performer
 @app.route('/performer/<int:performer_id>/delete/', methods=['GET', 'POST'])
 def deletePerformer(performer_id):
     performerToDelete = session.query(
@@ -79,7 +82,6 @@ def browseFiles():
     path = request.args.get('path')
     if not path:
         path = '/Users/scotclose/Development/repositories/music-player/static'
-    print("path in browseFilse is: " + path)
     file_list = os.listdir(path)
     path_components = string.split(path, '/')
     return render_template('browseFiles.html',
@@ -87,6 +89,13 @@ def browseFiles():
         files = file_list,
         path_components = path_components,
         working_path = '/')
+
+# Get ID3 info for a track
+@app.route('/track_info/')
+def trackInfo():
+    path = request.args.get('path')
+    audio = MP3(path, ID3=EasyID3)
+    return render_template('showID3Info.html', audio = audio)
 
 def showAsLink(path, file):
     if not file.startswith('.'):
