@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, exists
 from sqlalchemy.orm import sessionmaker
 from database_setup import Base, Track, Performer
 from mutagen.mp3 import MP3
@@ -46,7 +46,7 @@ def listTracks():
 @app.route('/performer/')
 def listPerformers():
     performers = session.query(Performer).order_by(Performer.sort_name)
-    return render_template('performer.html',
+    return render_template('listPerformers.html',
         performers = performers)
     pass
 
@@ -61,6 +61,19 @@ def newPerformer():
         return redirect(url_for('listPerformers'))
     else:
         return render_template('newPerformer.html')
+
+# Edit a performer
+@app.route('/performer/<int:performer_id>/edit/', methods=['GET', 'POST'])
+def editPerformer(performer_id):
+    editedPerformer = session.query(Performer).filter_by(id=performer_id).one()
+    if request.method == 'POST':
+        if request.form['name']:
+            editedPerformer.name = request.form['name']
+            editedPerformer.sort_name = request.form['sort_name']
+            return redirect(url_for('listPerformers'))
+    else:
+        return render_template(
+            'editPerformer.html', performer = editedPerformer)
 
 # Delete a performer
 @app.route('/performer/<int:performer_id>/delete/', methods=['GET', 'POST'])
@@ -97,6 +110,38 @@ def trackInfo():
     audio = MP3(path, ID3=EasyID3)
     return render_template('showID3Info.html', audio = audio)
 
+# Scan for tracks
+@app.route('/scan/')
+def scan():
+    path = request.args.get('path')
+    artist_set = set()
+    recurse(path, artist_set)
+    return render_template('browseFiles.html', artists = sorted(artist_set))
+
+def recurse(path, artist_set):
+    print "Scanning path " + path
+    file_list = os.listdir(path)
+    for file in file_list:
+        if file.endswith('.mp3'):
+            # Get performer
+            # print "Scanning file " + str(file)
+            audio = MP3(path + '/' + str(file), ID3 = EasyID3)
+            if not 'artist' in audio:
+                print "artist tag not found"
+            else:
+                performer_name = audio['artist'][0]
+                # print performer_name
+                artist_set.add(audio['artist'][0])
+                if session.query(exists().where(Performer.name == performer_name)).scalar():
+                    print performer_name + " already exists"
+                else:
+                    newPerformer = Performer(name = performer_name,
+                        sort_name = performer_name)
+                    session.add(newPerformer)
+                    session.commit()
+        if os.path.isdir(path + '/' + str(file)):
+            recurse(path + '/' + file, artist_set)
+
 def showAsLink(path, file):
     if not file.startswith('.'):
         if os.path.isdir(path + '/' + file):
@@ -109,7 +154,7 @@ def showAsLink(path, file):
 app.jinja_env.filters['showAsLink'] = showAsLink
 
 def showAsFile(file):
-    if file.endswith('.mp3'):
+    if (file.endswith('.m4a') or file.endswith('.mp3')):
         return True
     else:
         return False
