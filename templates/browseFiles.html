@@ -22,6 +22,11 @@
 <body>
     <h1>Files in {{ current_path }}/</h1>
     {% block body %}
+    <ol>
+        {% for artist in artists %}
+        <li>{{ artist }}</li>
+        {% endfor %}
+    </ol>
     <p>
     {% for dir in path_components -%}
         {% if dir|isNotEmptyString %}
@@ -33,11 +38,12 @@
     <ul>
     {% for file in files %}
         {% if current_path|showAsLink(file) %}
-        <li><a href="{{ url_for('browseFiles', path = current_path + '/' + file ) }}">{{ file }}</a></li>
+        <li><a href="{{ url_for('browseFiles', path = current_path + '/' + file ) }}">{{ file }}</a>
+            &nbsp;<a href=" {{ url_for('scan', path = current_path + '/' + file ) }} ">Scan for Performers</a></li></li>
         {% endif %}
         {% if file|showAsFile %}
         <li>{{ file }}&nbsp;<a href='javascript:play_track("{{ current_path }}/{{ file }}");'>Play</a>
-            <a href="{{ url_for('trackInfo', path = current_path + '/' + file) }}">Info</a></li>
+            <a href="{{ url_for('trackInfo', path = current_path + '/' + file) }}">Info</a>
         {% endif %}
     {% endfor %}
     </ul>
