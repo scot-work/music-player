@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for
-from sqlalchemy import create_engine, exists
+from sqlalchemy import create_engine, exists, and_
 from sqlalchemy.orm import sessionmaker
-from database_setup import Base, Track, Performer
+from database_setup import Base, Track, Performer, Album
 from mutagen.mp3 import MP3
 from mutagen.easyid3 import EasyID3
 import os
@@ -35,12 +35,20 @@ def playlist():
 # List tracks
 @app.route('/track/')
 def listTracks():
-    tracks = session.query(Track)
-    performer = session.query(Performer).one()
-    return render_template('tracks.html',
-        tracks = tracks,
-        performer = performer)
+    tracks = session.query(Track).order_by(Track.title)
+    return render_template('listTracks.html',
+        tracks = tracks)
     pass
+
+# Track Details
+@app.route('/track/<int:track_id>')
+def trackDetails(track_id):
+    track = session.query(Track).filter_by(id = track_id).one()
+    album = session.query(Album).filter_by(id = track.album).one()
+    performer = session.query(Performer).filter_by(id = track.performer).one()
+    return render_template('trackDetails.html', track = track,
+        album = album,
+        performer = performer)
 
 # List performers
 @app.route('/performer/')
@@ -79,7 +87,7 @@ def editPerformer(performer_id):
 @app.route('/performer/<int:performer_id>/delete/', methods=['GET', 'POST'])
 def deletePerformer(performer_id):
     performerToDelete = session.query(
-        Performer).filter_by( id = performer_id).one()
+        Performer).filter_by(id = performer_id).one()
     if request.method == 'POST':
         session.delete(performerToDelete)
         session.commit()
@@ -115,32 +123,82 @@ def trackInfo():
 def scan():
     path = request.args.get('path')
     artist_set = set()
-    recurse(path, artist_set)
-    return render_template('browseFiles.html', artists = sorted(artist_set))
+    album_set = set()
+    recurse(path, artist_set, album_set)
+    return render_template('scanResults.html',
+        artists = sorted(artist_set),
+        albums = album_set)
 
-def recurse(path, artist_set):
+def recurse(path, artist_set, album_set):
     print "Scanning path " + path
     file_list = os.listdir(path)
     for file in file_list:
         if file.endswith('.mp3'):
-            # Get performer
-            # print "Scanning file " + str(file)
             audio = MP3(path + '/' + str(file), ID3 = EasyID3)
+            if not 'title' in audio:
+                print "title tag not found"
+            else:
+                track_title = audio['title'][0]
+
+            # Get performer/artist
             if not 'artist' in audio:
                 print "artist tag not found"
             else:
                 performer_name = audio['artist'][0]
-                # print performer_name
                 artist_set.add(audio['artist'][0])
-                if session.query(exists().where(Performer.name == performer_name)).scalar():
+                #if session.query(exists().where(Performer.name == performer_name)).scalar():
+                performer = session.query(Performer).filter_by(name = performer_name).one()
+                if performer:
                     print performer_name + " already exists"
+                    performer_id = performer.id
                 else:
                     newPerformer = Performer(name = performer_name,
                         sort_name = performer_name)
+                    performer_id = newPerformer.id
                     session.add(newPerformer)
                     session.commit()
+
+            # Get album
+            if not 'album' in audio:
+                print "album tag not found"
+            else:
+                track_album = audio['album'][0]
+                print track_album
+                album_set.add(track_album)
+                #if session.query(exists().where(Album.title == album_title)).scalar():
+                album = session.query(Album).filter_by(title = track_album).one()
+                if album:
+                    print "album " + track_album + " already exists"
+                    album_id = album.id
+                else:
+                    newAlbum = Album(title = track_album)
+                    album_id = newAlbum.id
+                    session.add(newAlbum)
+                    session.commit()
+
+            if not 'tracknumber' in audio:
+                print "track number not found"
+                track_number = 0
+            else:
+                track_number = audio['tracknumber'][0]
+            # Check for duplicate
+            track_query = session.query(Track).filter(and_(Track.title == track_title,
+                Track.album == track_album))
+            print str(track_query.count()) + " rows"
+            if (track_query.count() > 0):
+                print "Track already exists: " + track_title
+            else:
+              # Create track
+                newTrack = Track(title = track_title,
+                    album = album_id,
+                    path = path + '/' + str(file),
+                    performer = performer_id,
+                    track_number = track_number)
+                session.add(newTrack)
+                session.commit()
+
         if os.path.isdir(path + '/' + str(file)):
-            recurse(path + '/' + file, artist_set)
+            recurse(path + '/' + file, artist_set, album_set)
 
 def showAsLink(path, file):
     if not file.startswith('.'):

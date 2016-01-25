@@ -4,17 +4,16 @@
 
 <h1>Tracks</h1>
 
-<p>{{ performer.name }}</p>
 
-{% for i in tracks %}
+{% for track in tracks %}
 
 <div>
 
-<p>{{i.title}}</p>
+<p>{{track.title}}</p>
 
-<p>{{i.path}}</p>
+<p>{{track.album}}</p>
 
-<p> {{i.performer}} </p>
+<p> {{track.performer}} </p>
 
 </div>
 

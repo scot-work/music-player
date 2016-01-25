@@ -1,6 +1,6 @@
 import os
 import sys
-from sqlalchemy import Column, ForeignKey, Integer, String
+from sqlalchemy import Column, ForeignKey, Integer, String, Date
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from sqlalchemy import create_engine
@@ -14,6 +14,26 @@ class Track(Base):
     title = Column(String(250), nullable=False)
     path = Column(String(250), nullable=False)
     performer = Column(Integer, ForeignKey('performer.id'))
+    album = Column(Integer, ForeignKey('album.id'))
+    track_number = Column(Integer)
+    rating = Column(Integer)
+    times_played = Column(Integer)
+    last_played = Column(Date)
+    transitions_to = Column(Integer)
+
+class Album(Base):
+    __tablename__ = 'album'
+
+    id = Column(Integer, primary_key=True)
+    title = Column(String(250), nullable=False)
+    year = Column(Integer)
+    genre = Column(Integer, ForeignKey('genre.id'))
+
+class Genre(Base):
+    __tablename__ = 'genre'
+
+    id = Column(Integer, primary_key=True)
+    title = Column(String(250), nullable=False)
 
 class Performer(Base):
     __tablename__ = 'performer'
