@@ -118,6 +118,19 @@ def trackInfo():
     audio = MP3(path, ID3=EasyID3)
     return render_template('showID3Info.html', audio = audio)
 
+# Show albums
+@app.route('/album/')
+def listAlbums():
+    albums = session.query(Album).order_by(Album.title)
+    return render_template('listAlbums.html', albums = albums)
+
+@app.route('/album/<int:album_id>')
+def albumDetails(album_id):
+    album = session.query(Album).filter_by(id = album_id).one()
+    album_tracks = session.query(Track).filter_by(album = album_id).order_by(Track.track_number)
+    return render_template('albumDetails.html', album = album, tracks = album_tracks)
+
+
 # Scan for tracks
 @app.route('/scan/')
 def scan():
@@ -135,6 +148,12 @@ def recurse(path, artist_set, album_set):
     for file in file_list:
         if file.endswith('.mp3'):
             audio = MP3(path + '/' + str(file), ID3 = EasyID3)
+            if not 'date' in audio:
+                print "date tag not found"
+                track_date = 9999
+            else:
+                track_date = audio['date'][0]
+
             if not 'title' in audio:
                 print "title tag not found"
                 track_title = "untitled"
@@ -146,11 +165,10 @@ def recurse(path, artist_set, album_set):
                 print "artist tag not found"
             else:
                 performer_name = audio['artist'][0]
-                artist_set.add(audio['artist'][0])
+                artist_set.add(performer_name)
                 #if session.query(exists().where(Performer.name == performer_name)).scalar():
                 performer = session.query(Performer).filter_by(name = performer_name).first()
                 if performer:
-                    print performer_name + " already exists"
                     performer_id = performer.id
                 else:
                     newPerformer = Performer(name = performer_name,
@@ -170,10 +188,10 @@ def recurse(path, artist_set, album_set):
             #if session.query(exists().where(Album.title == album_title)).scalar():
             album = session.query(Album).filter_by(title = track_album).first()
             if album:
-                print "album " + track_album + " already exists"
                 album_id = album.id
             else:
-                album = Album(title = track_album)
+                album = Album(title = track_album,
+                    year = track_date)
                 album_id = album.id
                 session.add(album)
                 session.commit()
@@ -186,10 +204,7 @@ def recurse(path, artist_set, album_set):
             # Check for duplicate
             track_query = session.query(Track).filter(and_(Track.title == track_title,
                 Track.album == album.id))
-            print str(track_query.count()) + " rows found"
-            if (track_query.count() > 0):
-                print "Track already exists: " + track_title
-            else:
+            if (not track_query.count() > 0):
               # Create track
                 newTrack = Track(title = track_title,
                     album = album_id,

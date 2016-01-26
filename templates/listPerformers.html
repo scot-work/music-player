@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+<!doctype html>}
+<html>
+<body>
+{% block body %}
+<h1>Performers</h1>
+<p><a href="{{ url_for('newPerformer') }}">New</a></p>
+
+{% for i in performers %}
+
+<div>
+
+<p>{{ i.sort_name }}&nbsp;({{ i.name }})<br />
+<a href="{{ url_for('editPerformer', performer_id = i.id) }}">Edit</a>&nbsp; <a href="{{ url_for('deletePerformer', performer_id = i.id) }}">Delete</a>
+</p>
+
+</div>
+
+
+{% endfor %}
+{% endblock %}
+</body>
+
+</html>

@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+<!doctype html>
+<html>
+<head>
+</head>
+<body>
+    {% block body %}
+    <ul>
+        {% for track in tracks %}
+        <li><a href="{{ url_for('trackDetails', track_id = track.id) }}">{{ track.title }}</a></li>
+        {% endfor %}
+    </ul>
+    {% endblock %}
+</body>
+</html>
