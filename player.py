@@ -30,7 +30,6 @@ def playlist():
     with open(playlist_path) as data_file:
         data = json.load(data_file)
     return render_template('playlist.html', data = data)
-    pass
 
 # List tracks
 @app.route('/track/')
@@ -38,7 +37,6 @@ def listTracks():
     tracks = session.query(Track).order_by(Track.title)
     return render_template('listTracks.html',
         tracks = tracks)
-    pass
 
 # Track Details
 @app.route('/track/<int:track_id>')
@@ -124,12 +122,17 @@ def listAlbums():
     albums = session.query(Album).order_by(Album.title)
     return render_template('listAlbums.html', albums = albums)
 
-@app.route('/album/<int:album_id>')
+@app.route('/album/<int:album_id>/')
 def albumDetails(album_id):
     album = session.query(Album).filter_by(id = album_id).one()
     album_tracks = session.query(Track).filter_by(album = album_id).order_by(Track.track_number)
     return render_template('albumDetails.html', album = album, tracks = album_tracks)
 
+@app.route('/album/<int:album_id>/play/')
+def playAlbum(album_id):
+    album = session.query(Album).filter_by(id = album_id).one()
+    album_tracks = session.query(Track).filter_by(album = album_id).order_by(Track.track_number)
+    return render_template('playAlbum.html', data = album_tracks)
 
 # Scan for tracks
 @app.route('/scan/')
