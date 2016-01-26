@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+<!doctype html>
+<html>
+<head>
+    {% block head %}
+    <script>
+
+    var playlist = new Array();
+    var track_num = 0;
+    var audio_element;
+    var playing_element;
+
+    function init(){
+        audio_element = document.getElementById("audio");
+        playing_element = document.getElementById("playing");
+        make_playlist();
+        start_playlist();
+    }
+
+    // Convert the JSON array into local URLs
+    function make_playlist(){
+        {% for track in data %}
+            console.log("Creating playlist");
+            track = new Object();
+            track.title = "{{ track.title }}";
+            console.log(track.name);
+            console.log("{{ track.path }}");
+            path_start = "{{ track.path }}".indexOf("/static");
+            console.log("local path starts at " + path_start);
+            track.path = "{{ track.path }}".substring(path_start);
+            //track.path = "{{ url_for('static', filename = track.path) }}";
+            playlist.push(track);
+            var item = document.createElement("li");
+            var textnode = document.createTextNode("{{ track.name }}");
+            item.appendChild(textnode);
+            playing_element.appendChild(item);
+        {% endfor %}
+    }
+
+    function shuffle(input_array){
+        var shuffled_array = new Array();
+        var track;
+        while(input_array.length > 0){
+            rand = Math.floor(Math.random() * input_array.length);
+            console.log(input_array.length + ", " + rand);
+            track = input_array.splice(rand, 1);
+            var clone = new Object();
+            clone.name = track.name;
+            clone.path = track.path
+            shuffled_array.push(clone);
+        }
+        return shuffled_array;
+    }
+
+    // Play the first track
+    function start_playlist() {
+        audio_element.src = playlist[track_num].path;
+        playing_element.innerHTML = playlist[track_num].title;
+        audio_element.play();
+        //play_track(playlist[track_num].path);
+    }
+
+    // Play next track
+    function next_track() {
+        if (track_num < playlist.length) {
+            track_num = track_num + 1;
+            audio_element.src = playlist[track_num].path;
+            audio_element.play();
+            // play_track(playlist[track_num].path);
+        }
+    }
+
+</script>
+{% endblock %}
+</head>
+<body {% block onload %} onload = "init()" {% endblock %} >
+    {% block body %}
+    <h1>Playlist</h1>
+    <audio controls id="audio" onended="next_track()" ></audio>
+    <ul id="playing"></ul>
+    {% endblock %}
+</body>
+</html>
