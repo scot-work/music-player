@@ -137,6 +137,7 @@ def recurse(path, artist_set, album_set):
             audio = MP3(path + '/' + str(file), ID3 = EasyID3)
             if not 'title' in audio:
                 print "title tag not found"
+                track_title = "untitled"
             else:
                 track_title = audio['title'][0]
 
@@ -147,7 +148,7 @@ def recurse(path, artist_set, album_set):
                 performer_name = audio['artist'][0]
                 artist_set.add(audio['artist'][0])
                 #if session.query(exists().where(Performer.name == performer_name)).scalar():
-                performer = session.query(Performer).filter_by(name = performer_name).one()
+                performer = session.query(Performer).filter_by(name = performer_name).first()
                 if performer:
                     print performer_name + " already exists"
                     performer_id = performer.id
@@ -161,20 +162,21 @@ def recurse(path, artist_set, album_set):
             # Get album
             if not 'album' in audio:
                 print "album tag not found"
+                track_album = "unknown"
             else:
                 track_album = audio['album'][0]
-                print track_album
-                album_set.add(track_album)
-                #if session.query(exists().where(Album.title == album_title)).scalar():
-                album = session.query(Album).filter_by(title = track_album).one()
-                if album:
-                    print "album " + track_album + " already exists"
-                    album_id = album.id
-                else:
-                    newAlbum = Album(title = track_album)
-                    album_id = newAlbum.id
-                    session.add(newAlbum)
-                    session.commit()
+            print track_album
+            album_set.add(track_album)
+            #if session.query(exists().where(Album.title == album_title)).scalar():
+            album = session.query(Album).filter_by(title = track_album).first()
+            if album:
+                print "album " + track_album + " already exists"
+                album_id = album.id
+            else:
+                album = Album(title = track_album)
+                album_id = album.id
+                session.add(album)
+                session.commit()
 
             if not 'tracknumber' in audio:
                 print "track number not found"
@@ -183,8 +185,8 @@ def recurse(path, artist_set, album_set):
                 track_number = audio['tracknumber'][0]
             # Check for duplicate
             track_query = session.query(Track).filter(and_(Track.title == track_title,
-                Track.album == track_album))
-            print str(track_query.count()) + " rows"
+                Track.album == album.id))
+            print str(track_query.count()) + " rows found"
             if (track_query.count() > 0):
                 print "Track already exists: " + track_title
             else:
