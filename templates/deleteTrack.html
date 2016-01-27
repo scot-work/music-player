@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+<!doctype html>
+<html>
+<head>
+<title>Delete Track</title>
+</head>
+<body>
+    {% block body %}
+    <form method = "post" action = "{{ url_for('deleteTrack', track_id = track.id) }}">
+        <input type="submit" value="Delete {{ track.title }}?" />
+    </form>
+    {% endblock %}
+</body>
+</html>
