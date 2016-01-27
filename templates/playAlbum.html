@@ -6,13 +6,14 @@
     <script>
 
     var playlist = new Array();
-    var track_num = 0;
     var audio_element;
     var playing_element;
+    var track_num;
 
     function init(){
         audio_element = document.getElementById("audio");
         playing_element = document.getElementById("playing");
+        track_num = 0;
         make_playlist();
         // start_playlist();
         next_track();
@@ -26,13 +27,15 @@
             track = new Object();
             track.title = "{{ track.title }}";
             console.log("adding track to playlist: " + track.title);
-            console.log("{{ track.path }}");
-            path_start = "{{ track.path }}".indexOf("/static");
-            track.path = "{{ track.path }}".substring(path_start);
-            //track.path = "{{ url_for('static', filename = track.path) }}";
+            console.log("Adding path: {{ track.path }}");
+            var temp_path = "{{ track.path }}".replace("&#39;","'");
+            temp_path = temp_path.replace("&amp;", "&");
+            track.path = temp_path;
+
+            // track.path = "{{ url_for('static', filename = track.path) }}";
             playlist.push(track);
             var item = document.createElement("li");
-            var textnode = document.createTextNode("{{ track.title }}");
+            var textnode = document.createTextNode("{{ track.title }}".replace("&#39;","'").replace("&amp;", "&"));
             item.appendChild(textnode);
             track_list.appendChild(item);
         {% endfor %}
@@ -63,7 +66,7 @@
 
     // Play next track
     function next_track() {
-        console.log("attempting to play track");
+        console.log("Playing track " + track_num);
         if (track_num < playlist.length) {
             audio_element.src = playlist[track_num].path;
             playing_element.innerHTML = playlist[track_num].title;
@@ -83,9 +86,9 @@
 <body {% block onload %} onload = "init()" {% endblock %} >
     {% block body %}
     <h1>{{ album_title }}</h1>
+    <p id="playing" style="font-weight:bold;"></p>
     <audio controls id="audio" onended="next_track()" ></audio>
-    <p id="playing"></p>
-    <ul id = "track_list"></ul>
+    <ol id = "track_list"></ol>
     {% endblock %}
 </body>
 </html>

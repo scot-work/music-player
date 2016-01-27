@@ -262,7 +262,7 @@ def recurse(path, artist_set, album_set):
               # Create track
                 newTrack = Track(title = track_title,
                     album = album_id,
-                    path = path + '/' + str(file),
+                    path = localPath(path + '/' + str(file)),
                     performer = performer_id,
                     track_number = track_number)
                 session.add(newTrack)
@@ -270,6 +270,15 @@ def recurse(path, artist_set, album_set):
 
         if os.path.isdir(path + '/' + str(file)):
             recurse(path + '/' + file, artist_set, album_set)
+
+def localPath(absolute_path):
+    path_start = absolute_path.index("/static")
+    # path_start = absolute_path.indexOf("/static")
+    # return absolute_path.substring(path_start)
+    # remove &#39;, replace with '
+    result = absolute_path[path_start:]
+    result.replace("&#39;", "'")
+    return result
 
 def showAsLink(path, file):
     if not file.startswith('.'):

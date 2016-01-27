@@ -1,0 +1,12 @@
+venv
+static
+add_tracks.py
+backup
+database_setup.pyc
+database_temp.py
+db_testing.py
+music_player.db
+playlists
+start_venv.sh
+templates/editX.html
+templates/track_info.html
