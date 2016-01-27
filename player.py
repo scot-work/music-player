@@ -48,6 +48,49 @@ def trackDetails(track_id):
         album = album,
         performer = performer)
 
+
+# Edit a track
+@app.route('/track/<int:track_id>/edit/', methods = ['GET', 'POST'])
+def editTrack(track_id):
+    editedTrack = session.query(Track).filter_by(id = track_id).one()
+    if request.method == 'POST':
+        if request.form['title']:
+            editedTrack.title = request.form['title']
+            print "title"
+        if request.form['performer']:
+            editedTrack.performer = request.form['performer']
+            print "performer"
+        if request.form['album']:
+            editedTrack.album = request.form['album']
+        if request.form['track_number']:
+            editedTrack.track_number = request.form['track_number']
+        if request.form['rating']:
+            editedTrack.rating = request.form['rating']
+        if request.form['path']:
+            editedTrack.path = request.form['path']
+        if request.form['transitions_to']:
+            editedTrack.transitions_to = request.form['transitions_to']
+            print "transitions to"
+        session.add(editedTrack)
+        session.commit()
+        return redirect(url_for('listTracks'))
+    else:
+        return render_template(
+            'editTrack.html', track = editedTrack)
+
+# Delete a track
+@app.route('/track/<int:track_id>/delete/', methods=['GET', 'POST'])
+def deleteTrack(track_id):
+    trackToDelete = session.query(Track).filter_by(id = track_id).one()
+    if request.method == 'POST':
+        session.delete(trackToDelete)
+        session.commit()
+        return redirect(
+            url_for('listTracks', track_id = track_id))
+    else:
+        return render_template(
+            'deleteTrack.html', track = trackToDelete)
+
 # List performers
 @app.route('/performer/')
 def listPerformers():
@@ -75,8 +118,11 @@ def editPerformer(performer_id):
     if request.method == 'POST':
         if request.form['name']:
             editedPerformer.name = request.form['name']
+        if request.form['sort_name']:
             editedPerformer.sort_name = request.form['sort_name']
-            return redirect(url_for('listPerformers'))
+        session.add(editedPerformer)
+        session.commit()
+        return redirect(url_for('listPerformers'))
     else:
         return render_template(
             'editPerformer.html', performer = editedPerformer)
@@ -125,14 +171,18 @@ def listAlbums():
 @app.route('/album/<int:album_id>/')
 def albumDetails(album_id):
     album = session.query(Album).filter_by(id = album_id).one()
-    album_tracks = session.query(Track).filter_by(album = album_id).order_by(Track.track_number)
-    return render_template('albumDetails.html', album = album, tracks = album_tracks)
+    album_tracks = session.query(Track).filter_by(album
+        = album_id).order_by(Track.track_number)
+    return render_template('albumDetails.html', album = album,
+        tracks = album_tracks)
 
 @app.route('/album/<int:album_id>/play/')
 def playAlbum(album_id):
     album = session.query(Album).filter_by(id = album_id).one()
-    album_tracks = session.query(Track).filter_by(album = album_id).order_by(Track.track_number)
-    return render_template('playAlbum.html', data = album_tracks)
+    album_tracks = session.query(Track).filter_by(album
+        = album_id).order_by(Track.track_number)
+    return render_template('playAlbum.html', tracks = album_tracks,
+        album_title = album.title)
 
 # Scan for tracks
 @app.route('/scan/')
@@ -169,8 +219,8 @@ def recurse(path, artist_set, album_set):
             else:
                 performer_name = audio['artist'][0]
                 artist_set.add(performer_name)
-                #if session.query(exists().where(Performer.name == performer_name)).scalar():
-                performer = session.query(Performer).filter_by(name = performer_name).first()
+                performer = session.query(Performer).filter_by(name
+                    = performer_name).first()
                 if performer:
                     performer_id = performer.id
                 else:
@@ -205,7 +255,8 @@ def recurse(path, artist_set, album_set):
             else:
                 track_number = audio['tracknumber'][0]
             # Check for duplicate
-            track_query = session.query(Track).filter(and_(Track.title == track_title,
+            track_query = session.query(Track).filter(and_
+                (Track.title == track_title,
                 Track.album == album.id))
             if (not track_query.count() > 0):
               # Create track

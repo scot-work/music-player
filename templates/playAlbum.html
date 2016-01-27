@@ -14,26 +14,27 @@
         audio_element = document.getElementById("audio");
         playing_element = document.getElementById("playing");
         make_playlist();
-        start_playlist();
+        // start_playlist();
+        next_track();
     }
 
     // Convert the JSON array into local URLs
     function make_playlist(){
-        {% for track in data %}
-            console.log("Creating playlist");
+        track_list = document.getElementById("track_list");
+        console.log("Creating playlist");
+        {% for track in tracks %}
             track = new Object();
             track.title = "{{ track.title }}";
-            console.log(track.name);
+            console.log("adding track to playlist: " + track.title);
             console.log("{{ track.path }}");
             path_start = "{{ track.path }}".indexOf("/static");
-            console.log("local path starts at " + path_start);
             track.path = "{{ track.path }}".substring(path_start);
             //track.path = "{{ url_for('static', filename = track.path) }}";
             playlist.push(track);
             var item = document.createElement("li");
-            var textnode = document.createTextNode("{{ track.name }}");
+            var textnode = document.createTextNode("{{ track.title }}");
             item.appendChild(textnode);
-            playing_element.appendChild(item);
+            track_list.appendChild(item);
         {% endfor %}
     }
 
@@ -62,10 +63,16 @@
 
     // Play next track
     function next_track() {
+        console.log("attempting to play track");
         if (track_num < playlist.length) {
-            track_num = track_num + 1;
             audio_element.src = playlist[track_num].path;
-            audio_element.play();
+            playing_element.innerHTML = playlist[track_num].title;
+            try {
+                audio_element.play();
+            } catch(err) {
+                console.log("error playing track: " + err)
+            }
+            track_num = track_num + 1;
             // play_track(playlist[track_num].path);
         }
     }
@@ -75,9 +82,10 @@
 </head>
 <body {% block onload %} onload = "init()" {% endblock %} >
     {% block body %}
-    <h1>Playlist</h1>
+    <h1>{{ album_title }}</h1>
     <audio controls id="audio" onended="next_track()" ></audio>
-    <ul id="playing"></ul>
+    <p id="playing"></p>
+    <ul id = "track_list"></ul>
     {% endblock %}
 </body>
 </html>

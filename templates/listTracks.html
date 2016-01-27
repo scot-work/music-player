@@ -2,12 +2,18 @@
 <!doctype html>
 <html>
 <head>
+    {% block head %}
+    <title>List Tracks</title>
+    {% endblock %}
 </head>
 <body>
     {% block body %}
     <ul>
         {% for track in tracks %}
-        <li><a href="{{ url_for('trackDetails', track_id = track.id) }}">{{ track.title }}</a></li>
+        <li><a href="{{ url_for('trackDetails', track_id = track.id) }}">{{ track.title }}</a><br />
+            <a href="{{ url_for('editTrack', track_id = track.id) }}">Edit</a>&nbsp;
+            <a href="{{ url_for('deleteTrack', track_id = track.id) }}">Delete</a>
+        </li>
         {% endfor %}
     </ul>
     {% endblock %}
