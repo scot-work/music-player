@@ -246,11 +246,8 @@ def recurse(path, artist_set, album_set):
             if not 'tracknumber' in audio:
                 track_number = 0
             else:
-                track_number = audio['tracknumber'][0]
-
-            # Add to database
-
-
+                # get the first number up to the /
+                track_number = string.split(audio['tracknumber'][0], '/')[0]
 
             # Find out if this performer is already in the db
             performer = session.query(Performer).filter_by(name

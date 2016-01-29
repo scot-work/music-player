@@ -39,7 +39,7 @@
     {% for file in files %}
         {% if current_path|showAsLink(file) %}
         <li><a href="{{ url_for('browseFiles', path = current_path + '/' + file ) }}">{{ file }}</a>
-            &nbsp;<a href=" {{ url_for('scan', path = current_path + '/' + file ) }} ">Scan Tracks</a></li></li>
+            &nbsp;<a href=" {{ url_for('scan', path = current_path + '/' + file ) }} "><button type="button">Scan Tracks</button></a></li></li>
         {% endif %}
         {% if file|showAsFile %}
         <li>{{ file }}&nbsp;<a href='javascript:play_track("{{ current_path }}/{{ file }}");'><button type="button">Play</button></a>
