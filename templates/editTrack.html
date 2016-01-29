@@ -11,7 +11,7 @@
     <h1>Edit Track</h1>
     <form action="{{ url_for('editTrack', track_id = track.id) }}" method="post">
         <p><label for="title">Title: </label>
-            <input type="text" name="title" id="title"  value="{{ track.title }}"/></p>
+            <input type="text" name="title" id="title"  value="{{ track.title }}" size = 150"/></p>
         <p><label for="performer">Performer: </label>
             <input type="text" name="performer" id="performer"  value="{{ track.performer }}"/></p>
         <p><label for="album">Album: </label>

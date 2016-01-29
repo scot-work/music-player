@@ -11,8 +11,8 @@
     <ul>
         {% for track in tracks %}
         <li><a href="{{ url_for('trackDetails', track_id = track.id) }}">{{ track.title }}</a><br />
-            <a href="{{ url_for('editTrack', track_id = track.id) }}">Edit</a>&nbsp;
-            <a href="{{ url_for('deleteTrack', track_id = track.id) }}">Delete</a>
+            <a href="{{ url_for('editTrack', track_id = track.id) }}"><button type="button">Edit</button></a>&nbsp;
+            <a href="{{ url_for('deleteTrack', track_id = track.id) }}"><button type="button">Delete</button></a>
         </li>
         {% endfor %}
     </ul>

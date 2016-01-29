@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, jsonify
 from sqlalchemy import create_engine, exists, and_
 from sqlalchemy.orm import sessionmaker
 from database_setup import Base, Track, Performer, Album
@@ -165,7 +165,10 @@ def trackInfo():
 # Show albums
 @app.route('/album/')
 def listAlbums():
-    albums = session.query(Album).order_by(Album.title)
+    # albums = session.query(Album).order_by(Album.performer).all()
+    # session.query(User).join(Address, User.id==Address.user_id)
+    albums = session.query(Album).all()
+    print albums
     return render_template('listAlbums.html', albums = albums)
 
 @app.route('/album/<int:album_id>/')
@@ -195,65 +198,91 @@ def scan():
         artists = sorted(artist_set),
         albums = album_set)
 
+@app.route('/_ajax_test')
+def test():
+    track = request.args.get('track')
+    return jsonify(result = track + " was played ")
+
 def recurse(path, artist_set, album_set):
     print "Scanning path " + path
     file_list = os.listdir(path)
     for file in file_list:
         if file.endswith('.mp3'):
+
+            # Get ID3 tags from track
             audio = MP3(path + '/' + str(file), ID3 = EasyID3)
+
+            # date
             if not 'date' in audio:
                 print "date tag not found"
                 track_date = 9999
             else:
                 track_date = audio['date'][0]
 
+            # title
             if not 'title' in audio:
                 print "title tag not found"
                 track_title = "untitled"
             else:
                 track_title = audio['title'][0]
 
-            # Get performer/artist
+            # artist
             if not 'artist' in audio:
                 print "artist tag not found"
+                performer_name = "unknown"
             else:
                 performer_name = audio['artist'][0]
-                artist_set.add(performer_name)
-                performer = session.query(Performer).filter_by(name
-                    = performer_name).first()
-                if performer:
-                    performer_id = performer.id
-                else:
-                    newPerformer = Performer(name = performer_name,
-                        sort_name = performer_name)
-                    performer_id = newPerformer.id
-                    session.add(newPerformer)
-                    session.commit()
 
-            # Get album
+            artist_set.add(performer_name)
+
+            # Album
             if not 'album' in audio:
-                print "album tag not found"
                 track_album = "unknown"
             else:
                 track_album = audio['album'][0]
-            print track_album
             album_set.add(track_album)
-            #if session.query(exists().where(Album.title == album_title)).scalar():
-            album = session.query(Album).filter_by(title = track_album).first()
-            if album:
-                album_id = album.id
-            else:
-                album = Album(title = track_album,
-                    year = track_date)
-                album_id = album.id
-                session.add(album)
-                session.commit()
 
+            # Track Number
             if not 'tracknumber' in audio:
-                print "track number not found"
                 track_number = 0
             else:
                 track_number = audio['tracknumber'][0]
+
+            # Add to database
+
+
+
+            # Find out if this performer is already in the db
+            performer = session.query(Performer).filter_by(name
+                = performer_name).first()
+            if performer:
+                # already in db
+                performer_id = performer.id
+            else:
+                # add to db
+                newPerformer = Performer(name = performer_name,
+                    sort_name = performer_name)
+                session.add(newPerformer)
+                session.commit()
+                performer_id = newPerformer.id
+
+            # TODO Check for performer to eliminate duplicate album titles (II)
+            album_query = session.query(Album).filter(and_
+                (Album.title == track_album,
+                Album.performer == performer_id))
+
+            if (album_query.count() > 0):
+                album = album_query.first()
+                album_id = album.id
+            else:
+                album = Album(
+                    title = track_album,
+                    year = track_date,
+                    performer = performer_id)
+                session.add(album)
+                session.commit()
+                album_id = album.id
+
             # Check for duplicate
             track_query = session.query(Track).filter(and_
                 (Track.title == track_title,
@@ -277,7 +306,7 @@ def localPath(absolute_path):
     # return absolute_path.substring(path_start)
     # remove &#39;, replace with '
     result = absolute_path[path_start:]
-    result.replace("&#39;", "'")
+    # result.replace("&#39;", "'")
     return result
 
 def showAsLink(path, file):

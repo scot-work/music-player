@@ -2,15 +2,14 @@
 <html>
 <head>
     <meta charset="utf-8" />
-    <style>
-        .top-navigation li { display: inline; font-weight: bold; font-family: sans-serif;}
-    </style>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename = 'styles.css') }}" />
     <script type = text/javascript src="{{ url_for('static', filename='jquery-2.2.0.min.js') }}"></script>
     {% block head %}
     {% endblock %}
 </head>
 <body {% block onload %} {% endblock %}>
-    <ul class = "top-navigation">
+
+        <ul class = "top-navigation" >
         <li><a href = "{{ url_for('home') }}">Home</a></li>
         <li><a href = "{{ url_for('listPerformers') }}">Performers</a></li>
         <li><a href = "{{ url_for('listAlbums')}}">Albums</a></li>
@@ -18,6 +17,7 @@
         <li><a href = "{{ url_for('browseFiles', path = '/Users/scotclose/Development/repositories/music-player/static') }}">Browse</a></li>
         <li><a href = "#">Playlists</a></li>
     </ul>
+
     {% block body %}
     {% endblock %}
 </body>

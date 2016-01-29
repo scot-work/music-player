@@ -42,8 +42,8 @@
             &nbsp;<a href=" {{ url_for('scan', path = current_path + '/' + file ) }} ">Scan Tracks</a></li></li>
         {% endif %}
         {% if file|showAsFile %}
-        <li>{{ file }}&nbsp;<a href='javascript:play_track("{{ current_path }}/{{ file }}");'>Play</a>
-            <a href="{{ url_for('trackInfo', path = current_path + '/' + file) }}">Info</a>
+        <li>{{ file }}&nbsp;<a href='javascript:play_track("{{ current_path }}/{{ file }}");'><button type="button">Play</button></a>
+            <a href="{{ url_for('trackInfo', path = current_path + '/' + file) }}"><button type="button">Info</button></a>
         {% endif %}
     {% endfor %}
     </ul>
