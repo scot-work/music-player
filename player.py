@@ -200,8 +200,9 @@ def scan():
 
 @app.route('/_ajax_test')
 def test():
-    track = request.args.get('track')
-    return jsonify(result = track + " was played ")
+    print "AJAX request received"
+    message = request.args.get('message')
+    return jsonify(result = str(message))
 
 def recurse(path, artist_set, album_set):
     print "Scanning path " + path

@@ -7,24 +7,23 @@
     {% endblock %}
 </head>
 <body>
+
+    {% block left %}
     <h1>Found in {{ current_path }}/</h1>
-    {% block body %}
-    <div style="width:50%;float:left">
         <h2>Artists</h2>
         <ol>
         {% for artist in artists %}
             <li>{{ artist }}</li>
         {% endfor %}
     </ol>
-    </div>
-    <div style="width:50%;float:right">
+    {% endblock %}
+    {% block right%}
         <h2>Albums</h2>
         <ol>
         {% for album in albums %}
             <li>{{ album }}</li>
         {% endfor %}
         </ol>
-</div>
     {% endblock %}
 </body>
 </html>

@@ -28,13 +28,15 @@ class Album(Base):
     title = Column(String(250), nullable=False)
     year = Column(Integer)
     performer = Column(Integer, ForeignKey('performer.id'))
-    genre_id = Column(Integer, ForeignKey('genre.id'))
+    genre = Column(Integer, ForeignKey('genre.id'))
+    tracks = relationship('Track', backref="track")
 
 class Genre(Base):
     __tablename__ = 'genre'
 
     id = Column(Integer, primary_key=True)
     title = Column(String(250), nullable=False)
+    #albums = relationship('Album', backref="album")
 
 class Performer(Base):
     __tablename__ = 'performer'
@@ -43,6 +45,19 @@ class Performer(Base):
     name = Column(String(80), nullable=False)
     sort_name = Column(String(80), nullable=False)
     albums = relationship('Album', backref="album")
+
+class Tag(Base):
+    __tablename__ = 'tag'
+
+    id = Column(Integer, primary_key=True)
+    name = Column(String(80), nullable=False)
+
+class Tag_Album(Base):
+    __tablename__ = 'tag_album'
+
+    id = Column(Integer, primary_key=True)
+    tag = Column(Integer, ForeignKey('tag.id'))
+    album = Column(Integer, ForeignKey('album.id'))
 
 engine = create_engine('sqlite:///music_player.db')
 
