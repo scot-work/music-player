@@ -11,7 +11,8 @@
 
     $(function() {
         $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
-        ajax_url = $SCRIPT_ROOT + '/_ajax_test';
+        // ajax_url = $SCRIPT_ROOT + '/_ajax_test';
+        ajax_url = $SCRIPT_ROOT + '/_ajax_track_played';
         track_num = 0;
         make_playlist();
         next_track();
@@ -21,7 +22,7 @@
 
     // Convert the JSON array into local URLs
     function make_playlist(){
-        $.getJSON(ajax_url, { "message":"Creating Playlist"}, function(data) {
+        $.getJSON('/_ajax_test', { "message":"Creating Playlist"}, function(data) {
                     console.log("JSON finished");
                     $("#result").text(data.result);
                 });
@@ -29,6 +30,7 @@
         {% for track in tracks %}
             track = new Object();
             track.title = "{{ track.title }}";
+            track.id = "{{ track.id }}"
             var temp_path = "{{ track.path }}".replace("&#39;","'");
             temp_path = temp_path.replace("&amp;", "&");
             track.path = temp_path;
@@ -40,47 +42,20 @@
         {% endfor %}
     }
 
-    //function shuffle(input_array){
-    //    var shuffled_array = new Array();
-    //    var track;
-    //    while(input_array.length > 0){
-    //        rand = Math.floor(Math.random() * input_array.length);
-    //        console.log(input_array.length + ", " + rand);
-    //        track = input_array.splice(rand, 1);
-    //        var clone = new Object();
-    //        clone.name = track.name;
-    //        clone.path = track.path
-    //        shuffled_array.push(clone);
-    //    }
-    //    return shuffled_array;
-    //}
-
-    // Play the first track
-    //function start_playlist() {
-    //    $("#audio").src = playlist[track_num].path;
-    //    $("#playing").innerHTML = playlist[track_num].title;
-    //    $("#audio").play();
-    //}
-
     // Play next track
     function next_track() {
         if (track_num < playlist.length) {
-
-            // $.getJSON(url, data, func)
-
-            $.getJSON(ajax_url, { "message":playlist[track_num].title}, function(data) {
-                    console.log("JSON finishted");
-                    $("#result").text(data.result);
+            $.getJSON('/_ajax_track_played', { "track_id":playlist[track_num].id}, function(data) {
+                    $("#title").text(data.title);
+                    $("#rating").text(data.rating);
+                    $("#times_played").text(data.times_played);
                 });
             $("#audio").attr("src", playlist[track_num].path);
             var display_name = playlist[track_num].title.replace("&#39;","'").replace("&amp;", "&");
             $("#playing").text(display_name);
 
             try {
-                //$("#audio").trigger("load"); // required?
                 $("#audio").trigger("play");
-
-
             } catch(err) {
                 console.log("error playing track: " + err)
             }
@@ -97,6 +72,11 @@
     <p id = "playing" style="font-weight:bold;"></p>
     <audio controls id="audio" onended="next_track()" ></audio>
     <ul id = "track_list"></ul>
+    {% endblock %}
+    {% block right %}
+        <p id = "title">AJAX reply</p>
+        <p id = "rating">AJAX reply</p>
+        <p id = "times_played">AJAX reply</p>
     {% endblock %}
 </body>
 </html>

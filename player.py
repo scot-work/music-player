@@ -7,6 +7,7 @@ from mutagen.easyid3 import EasyID3
 import os
 import json
 import string
+import datetime
 
 app = Flask(__name__)
 
@@ -204,6 +205,35 @@ def test():
     message = request.args.get('message')
     return jsonify(result = str(message))
 
+@app.route('/_ajax_track_played/')
+def trackPlayed():
+    track_id = request.args.get('track_id')
+
+    # Get track from db
+    track = session.query(Track).filter_by(id = track_id).one()
+    times_played = track.times_played
+
+    # Update last played
+    track.last_played = datetime.datetime.now()
+    track.times_played = times_played + 1
+    session.add(track)
+    session.commit()
+
+    rating = track.rating
+    stars = ""
+    for i in range(0, rating):
+        stars += "*"
+
+    json_response = {}
+    json_response['title'] = track.title
+    json_response['rating'] = stars
+    json_response['times_played'] = str(track.times_played)
+
+    print json_response
+
+    return jsonify(json_response)
+    #return jsonify(result = str(reply))
+
 def recurse(path, artist_set, album_set):
     print "Scanning path " + path
     file_list = os.listdir(path)
@@ -291,7 +321,9 @@ def recurse(path, artist_set, album_set):
                     album = album_id,
                     path = localPath(path + '/' + str(file)),
                     performer = performer_id,
-                    track_number = track_number)
+                    track_number = track_number,
+                    rating = 0,
+                    times_played = 0)
                 session.add(newTrack)
                 session.commit()
 
