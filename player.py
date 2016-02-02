@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, jsonify
 from sqlalchemy import create_engine, exists, and_
 from sqlalchemy.orm import sessionmaker
-from database_setup import Base, Track, Performer, Album
+from database_setup import Base, Track, Performer, Album, Tag, Tag_Track
 from mutagen.mp3 import MP3
 from mutagen.easyid3 import EasyID3
 import os
@@ -169,8 +169,13 @@ def listAlbums():
     # albums = session.query(Album).order_by(Album.performer).all()
     # session.query(User).join(Address, User.id==Address.user_id)
     albums = session.query(Album).all()
-    print albums
     return render_template('listAlbums.html', albums = albums)
+
+@app.route('/album/<int:album_id>/tag')
+def tagAlbum(album_id):
+    album = session.query(Album).filter_by(id = album_id).one()
+    tags = session.query(Tag).all()
+    return render_template('tagAlbum.html', album = album, tags = tags)
 
 @app.route('/album/<int:album_id>/')
 def albumDetails(album_id):
@@ -188,6 +193,21 @@ def playAlbum(album_id):
     return render_template('playAlbum.html', tracks = album_tracks,
         album_title = album.title)
 
+@app.route('/tag/')
+def listTags():
+    tags = session.query(Tag).all()
+    return render_template('listTags.html', tags = tags)
+
+@app.route('/tag/new/', methods=['GET', 'POST'])
+def newTag():
+    if request.method == 'POST':
+        newTag = Tag(name = request.form['name'])
+        session.add(newTag)
+        session.commit()
+        return redirect(url_for('listTags'))
+    else:
+        return render_template('newTag.html')
+
 # Scan for tracks
 @app.route('/scan/')
 def scan():
@@ -204,6 +224,32 @@ def test():
     print "AJAX request received"
     message = request.args.get('message')
     return jsonify(result = str(message))
+
+@app.route('/_ajax_edit_track')
+def updateRating():
+    track_id = request.args.get('track_id')
+    track = session.query(Track).filter_by(id = track_id).one()
+    selected_tags_query = session.query(Tag_Track).filter_by(track = track.id).all()
+    all_tags_query = session.query(Tag).all()
+    all_tags = {}
+    for tag in all_tags_query:
+        all_tags[tag.id] = tag.name
+    selected_tags = {}
+    for tag in selected_tags_query:
+        print "Selected tags"
+        print "id: " + str(tag.id)
+        print "tag id: " + str(tag.tag)
+        tag_name_query = session.query(Tag).filter_by(id = tag.tag).one()
+        print tag_name_query.name
+        selected_tags[tag.tag] = tag_name_query.name
+
+    json_response = {}
+    json_response['title'] = track.title
+    json_response['rating'] = track.rating
+    json_response['all_tags'] = all_tags
+    json_response['selected_tags'] = selected_tags
+    return jsonify(json_response)
+
 
 @app.route('/_ajax_track_played/')
 def trackPlayed():
@@ -291,8 +337,8 @@ def recurse(path, artist_set, album_set):
                 newPerformer = Performer(name = performer_name,
                     sort_name = performer_name)
                 session.add(newPerformer)
-                session.commit()
                 performer_id = newPerformer.id
+                session.commit()
 
             # TODO Check for performer to eliminate duplicate album titles (II)
             album_query = session.query(Album).filter(and_

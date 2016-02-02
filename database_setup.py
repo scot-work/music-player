@@ -52,12 +52,12 @@ class Tag(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String(80), nullable=False)
 
-class Tag_Album(Base):
-    __tablename__ = 'tag_album'
+class Tag_Track(Base):
+    __tablename__ = 'tag_track'
 
     id = Column(Integer, primary_key=True)
     tag = Column(Integer, ForeignKey('tag.id'))
-    album = Column(Integer, ForeignKey('album.id'))
+    track = Column(Integer, ForeignKey('track.id'))
 
 engine = create_engine('sqlite:///music_player.db')
 

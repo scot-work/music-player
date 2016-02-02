@@ -17,7 +17,7 @@
         <li><a href = "{{ url_for('listAlbums')}}">Albums</a></li>
         <li><a href = "{{ url_for('listTracks')}}">Tracks</a></li>
         <li><a href = "{{ url_for('browseFiles', path = '/Users/scotclose/Development/repositories/music-player/static') }}">Browse</a></li>
-        <li><a href = "#">Playlists</a></li>
+        <li><a href = "{{ url_for('listTags')}}">Tags</a></li>
     </ul>
 </div>
 
@@ -28,7 +28,6 @@
     </div>
     <div class="right">
         {% block right %}
-        <p id = "result">AJAX reply</p>
         {% endblock %}
     </div>
 </div>

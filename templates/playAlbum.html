@@ -16,17 +16,10 @@
         track_num = 0;
         make_playlist();
         next_track();
-
-
     });
 
     // Convert the JSON array into local URLs
     function make_playlist(){
-        $.getJSON('/_ajax_test', { "message":"Creating Playlist"}, function(data) {
-                    console.log("JSON finished");
-                    $("#result").text(data.result);
-                });
-        console.log("Creating playlist");
         {% for track in tracks %}
             track = new Object();
             track.title = "{{ track.title }}";
@@ -36,16 +29,63 @@
             track.path = temp_path;
             playlist.push(track);
             var item = document.createElement("li");
+            item.id = "track_" + track.id;
+
             var textnode = document.createTextNode("{{ track.track_number }} {{ track.title }}".replace("&#39;","'").replace("&amp;", "&"));
             item.appendChild(textnode);
             $("#track_list").append(item);
+
+            // Set up listener for track edit
+            $('#track_{{ track.id }}').click (
+                function() {
+                    console.log("Edit track #{{ track.id }}");
+                    $('#track_details').show();
+                    $.getJSON('/_ajax_edit_track', { "track_id":{{ track.id }} },
+                    function(data) {
+                        // console.log(data);
+                        console.log("All tags: ");
+                        console.log(data['all_tags']);
+                        console.log("Selected tags: ");
+                        var selected_tags = JSON.stringify(data['selected_tags']);
+                        console.log(selected_tags);
+
+
+                        // console.log(Object.keys(data["all_tags"]).length);
+                        // console.log(data["all_tags"][1]);
+                        $("#track_rating").val(data.rating);
+                        // Populate select with available tags
+                        tags = "";
+                        for (var i = 1; i <= Object.keys(data["all_tags"]).length; i++) {
+                            var current_tag = data["all_tags"][i];
+                            console.log(i + ": " + current_tag)
+                            tags += current_tag + " ";
+
+
+
+                            if (selected_tags.indexOf(current_tag) > 0) {
+                                console.log("Found tag: " + current_tag);
+                                $('#tag_select').append($("<option selected></option>")
+                            .attr("value",i).text(current_tag));
+                            } else {
+                                $('#tag_select').append($("<option></option>")
+                            .attr("value",i).text(current_tag));
+                            }
+
+
+                        }
+
+                        // .prop('selected', true)
+                        $("#track_tags").val(tags);
+                    });
+                });
         {% endfor %}
     }
 
     // Play next track
     function next_track() {
         if (track_num < playlist.length) {
-            $.getJSON('/_ajax_track_played', { "track_id":playlist[track_num].id}, function(data) {
+            $.getJSON('/_ajax_track_played', { "track_id":playlist[track_num].id }, function(data) {
+                    console.log(data)
                     $("#title").text(data.title);
                     $("#rating").text(data.rating);
                     $("#times_played").text(data.times_played);
@@ -74,9 +114,13 @@
     <ul id = "track_list"></ul>
     {% endblock %}
     {% block right %}
-        <p id = "title">AJAX reply</p>
-        <p id = "rating">AJAX reply</p>
-        <p id = "times_played">AJAX reply</p>
+    <div id = "track_details" style = "display: none;">
+        <h3>Track Details</h3>
+        <p id = "track_title"></p>
+        <p>Rating: <input type = "text" id = "track_rating" /></p>
+        <div><select multiple id = "tag_select" ></select></div>
+        <div><button type = "button">Submit</button></div>
+    </div>
     {% endblock %}
 </body>
 </html>
