@@ -107,8 +107,8 @@
     <h1>{{ album_title }}</h1>
     <p id = "playing" style="font-weight:bold;"></p>
     <audio controls id="audio" onended="next_track()" ></audio>
+    <a href="javascript:next_track();"><button type="button">Skip</button></a>
     <ul id = "track_list"></ul>
-    <a href="javascript:next_track();">Skip</a>
     {% endblock %}
     {% block right %}
     <div id = "track_details" style = "display: none;">

@@ -3,30 +3,30 @@
 <html>
 <head>
     {% block head %}
-    <title>Album List</title>
+    <title>Library</title>
     {% endblock %}
 </head>
 <body>
     {% block left %}
-    <h1>Album list</h1>
+    <h1>Library</h1>
     <ul>
         {% for performer in performers %}
         <li>{{ performer.sort_name }}
-    <ul>
-        {% for album in performer.albums %}
-        <li>
-            <a href="{{ url_for('albumDetails', album_id = album.id) }}">{{ album.performer }}&nbsp;{{ album.title }}</a><br />
-            <a href="{{ url_for('playAlbum', album_id = album.id) }}">
-                <button type="button">Play</button></a>&nbsp;
-            <a href="{{ url_for('tagAlbum', album_id = album.id) }}">
-                <button type = "button">Tag</button>
-            </a>
+            <ul>
+                {% for album in performer.albums %}
+                <li>
+                    <a href="{{ url_for('albumDetails', album_id = album.id) }}">{{ album.performer }}&nbsp;{{ album.title }}</a><br />
+                    <a href="{{ url_for('playAlbum', album_id = album.id) }}">
+                    <button type="button">Play</button></a>&nbsp;
+                    <a href="{{ url_for('tagAlbum', album_id = album.id) }}">
+                    <button type = "button">Tag</button>
+                    </a>
+                </li>
+                {% endfor %}
+            </ul>
         </li>
         {% endfor %}
     </ul>
-</li>
-{% endfor %}
-</ul>
     {% endblock %}
 </body>
 </html>
