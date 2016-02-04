@@ -7,14 +7,28 @@
 
     var playlist = new Array();
     var track_num;
-    var ajax_url;
+    // var ajax_url;
 
     $(function() {
         $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
-        // ajax_url = $SCRIPT_ROOT + '/_ajax_test';
-        ajax_url = $SCRIPT_ROOT + '/_ajax_track_played';
+        // ajax_url = $SCRIPT_ROOT + '/_ajax_track_played';
         track_num = 0;
         make_playlist();
+
+        $('#submit_change').click (
+                function() {
+                    $.getJSON('/_ajax_save_track', {
+                        track_rating: $('input[name="track_rating"]').val(),
+                        tag_select: $('input[name = "tag_select"]').val(),
+                        track_title: $('input[name = "track_title"]').val(),
+                        track_id: track_editing
+                    },
+                    function(data) {
+                        console.log(data);
+                    });
+                    $('#track_details').hide();
+                }
+        );
         next_track();
     });
 
@@ -38,44 +52,26 @@
             // Set up listener for track edit
             $('#track_{{ track.id }}').click (
                 function() {
-                    console.log("Edit track #{{ track.id }}");
+                    track_editing = {{ track.id }};
+                    console.log("Edit track #" + track_editing);
+                    $('#tag_select').find('option').remove();
                     $('#track_details').show();
+                    $('#track_title').val("{{ track.title }}");
                     $.getJSON('/_ajax_edit_track', { "track_id":{{ track.id }} },
                     function(data) {
-                        // console.log(data);
-                        console.log("All tags: ");
-                        console.log(data['all_tags']);
-                        console.log("Selected tags: ");
                         var selected_tags = JSON.stringify(data['selected_tags']);
-                        console.log(selected_tags);
-
-
-                        // console.log(Object.keys(data["all_tags"]).length);
-                        // console.log(data["all_tags"][1]);
                         $("#track_rating").val(data.rating);
                         // Populate select with available tags
-                        tags = "";
                         for (var i = 1; i <= Object.keys(data["all_tags"]).length; i++) {
                             var current_tag = data["all_tags"][i];
-                            console.log(i + ": " + current_tag)
-                            tags += current_tag + " ";
-
-
-
                             if (selected_tags.indexOf(current_tag) > 0) {
-                                console.log("Found tag: " + current_tag);
                                 $('#tag_select').append($("<option selected></option>")
                             .attr("value",i).text(current_tag));
                             } else {
                                 $('#tag_select').append($("<option></option>")
                             .attr("value",i).text(current_tag));
                             }
-
-
                         }
-
-                        // .prop('selected', true)
-                        $("#track_tags").val(tags);
                     });
                 });
         {% endfor %}
@@ -112,14 +108,21 @@
     <p id = "playing" style="font-weight:bold;"></p>
     <audio controls id="audio" onended="next_track()" ></audio>
     <ul id = "track_list"></ul>
+    <a href="javascript:next_track();">Skip</a>
     {% endblock %}
     {% block right %}
     <div id = "track_details" style = "display: none;">
-        <h3>Track Details</h3>
-        <p id = "track_title"></p>
-        <p>Rating: <input type = "text" id = "track_rating" /></p>
-        <div><select multiple id = "tag_select" ></select></div>
-        <div><button type = "button">Submit</button></div>
+        <h3>Edit Track</h3>
+        <input type = "text" name = "track_title" id = "track_title" />
+        <p>Rating</p>
+        <select name = "track_rating" id="track_rating" size = 4>
+            <option value = "1">*</option>
+            <option value = "2">**</option>
+            <option value = "3">***</option>
+            <option value = "4">****</option>
+        </select>
+        <div>Tags:<br /><select multiple name = "tag_select" id = "tag_select"></select></div>
+        <div><button type = "button" id = "submit_change">Submit</button></div>
     </div>
     {% endblock %}
 </body>

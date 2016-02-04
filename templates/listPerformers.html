@@ -4,26 +4,17 @@
 <body>
 {% block body %}
 <h1>Performers</h1>
+{% block left %}
 <p><a href="{{ url_for('newPerformer') }}"><button type="button">New</button></a></p>
-
+<ul>
 {% for performer in performers %}
+    <li>{{ performer.sort_name }}<br />
 
-<div>
-
-<p>{{ performer.sort_name }}<br />
-    {% for album in performer.albums %}
-    {{ album.title }}<br />
-    {% endfor %}
-
-
-    <br />
 <a href="{{ url_for('editPerformer', performer_id = performer.id) }}"><button type="button">Edit</button></a>&nbsp; <a href="{{ url_for('deletePerformer', performer_id = performer.id) }}"><button type="button">Delete</button></a>
-</p>
-
-</div>
-
-
+</li>
 {% endfor %}
+</ul>
+{% endblock %}
 {% endblock %}
 </body>
 

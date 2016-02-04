@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+<!doctype html>
+<html>
+<head>
+<title>New Tag</title>
+</head>
+<body>
+    {% block left %}
+    <h1>New Tag</h1>
+    <form action="{{ url_for('newTag') }}" method="post">
+        <p><label for = "name">Name:</label>
+        <input type = "text" name = "name" id = "name" /></p>
+        <input type = "submit" value = "Submit" />
+    </form>
+    {% endblock %}
+</body>
+</html>

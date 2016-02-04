@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+<!doctype html>
+<html>
+<head>
+    {% block head %}
+    <title>Tag List</title>
+    {% endblock %}
+</head>
+<body>
+    {% block left %}
+    <h1>Tag list</h1>
+    <p><a href="{{ url_for('newTag') }}"><button type="button">New</button></a></p>
+    <ul>
+        {% for tag in tags %}
+        <li>
+            {{ tag.name }}
+        </li>
+        {% endfor %}
+    </ul>
+    {% endblock %}
+</body>
+</html>

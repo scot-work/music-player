@@ -163,6 +163,12 @@ def trackInfo():
     audio = MP3(path, ID3=EasyID3)
     return render_template('showID3Info.html', audio = audio)
 
+# Show performers and albums
+@app.route('/library/')
+def showLibrary():
+    performers = session.query(Performer).order_by(Performer.sort_name).all()
+    return render_template('listLibrary.html', performers = performers)
+
 # Show albums
 @app.route('/album/')
 def listAlbums():
@@ -226,7 +232,7 @@ def test():
     return jsonify(result = str(message))
 
 @app.route('/_ajax_edit_track')
-def updateRating():
+def updateTrack():
     track_id = request.args.get('track_id')
     track = session.query(Track).filter_by(id = track_id).one()
     selected_tags_query = session.query(Tag_Track).filter_by(track = track.id).all()
@@ -250,6 +256,15 @@ def updateRating():
     json_response['selected_tags'] = selected_tags
     return jsonify(json_response)
 
+@app.route('/_ajax_save_track')
+def saveTrack():
+    track_id = request.args.get('track_id')
+    track = session.query(Track).filter_by(id = track_id).one()
+    rating = request.args.get('track_rating')
+    track.rating = rating
+    tags = request.args.get('tag_select')
+    print "Saving changes to " + track.title
+    return("Saved")
 
 @app.route('/_ajax_track_played/')
 def trackPlayed():
@@ -265,14 +280,9 @@ def trackPlayed():
     session.add(track)
     session.commit()
 
-    rating = track.rating
-    stars = ""
-    for i in range(0, rating):
-        stars += "*"
-
     json_response = {}
     json_response['title'] = track.title
-    json_response['rating'] = stars
+    json_response['rating'] = track.rating
     json_response['times_played'] = str(track.times_played)
 
     print json_response

@@ -7,7 +7,7 @@
     {% endblock %}
 </head>
 <body>
-    {% block body %}
+    {% block left %}
     <form action="{{ url_for('editPerformer', performer_id = performer.id) }}" method="post">
         <p><label for="name">Name: </label><input type="text" name="name" id="name"  value="{{ performer.name }}"/></p>
         <p><label for="sort_name">Sort Name: </label><input thpe="text" name="sort_name" id="sort_name"  value="{{ performer.sort_name }}"/></p>
