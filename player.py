@@ -34,6 +34,7 @@ def playlist():
 
 # List tracks
 @app.route('/track/')
+@app.route('/tracks/')
 def listTracks():
     tracks = session.query(Track).order_by(Track.title)
     return render_template('listTracks.html',
@@ -201,7 +202,7 @@ def playAlbum(album_id):
 
 @app.route('/tag/')
 def listTags():
-    tags = session.query(Tag).all()
+    tags = session.query(Tag).order_by(Tag.name).all()
     return render_template('listTags.html', tags = tags)
 
 @app.route('/tag/new/', methods=['GET', 'POST'])
@@ -231,12 +232,29 @@ def test():
     message = request.args.get('message')
     return jsonify(result = str(message))
 
+''' Someone has clicked a track name, and wants to update track info
+    Return all info that can be edited:
+    title
+    track_number
+    rating
+    times_played
+    last_played
+'''
 @app.route('/_ajax_edit_track')
 def updateTrack():
+    print "Updating track"
+    # Get the track ID from the AJAX request
     track_id = request.args.get('track_id')
+    print "Got track id %s" % track_id
+    # Get the track object from the DB
     track = session.query(Track).filter_by(id = track_id).one()
-    selected_tags_query = session.query(Tag_Track).filter_by(track = track.id).all()
+    # Get tags associated with this track
+    selected_tags_query = session.query(Tag_Track).filter_by(
+        track = track.id).all()
+    print "Got selected tags"
+    # Get all available tags
     all_tags_query = session.query(Tag).all()
+    print "Got all tags"
     all_tags = {}
     for tag in all_tags_query:
         all_tags[tag.id] = tag.name
@@ -251,19 +269,63 @@ def updateTrack():
 
     json_response = {}
     json_response['title'] = track.title
+    json_response['track_number'] = track.track_number
     json_response['rating'] = track.rating
+    json_response['times_played'] = track.times_played
+    json_response['last_played'] = str(track.last_played)
     json_response['all_tags'] = all_tags
     json_response['selected_tags'] = selected_tags
+    print "returning response"
+    print json_response
     return jsonify(json_response)
 
+# Save changes to the database
 @app.route('/_ajax_save_track')
 def saveTrack():
+    changed = False
+    # Get track ID from AJAX request
     track_id = request.args.get('track_id')
+
+    # Get the track from the DB
     track = session.query(Track).filter_by(id = track_id).one()
-    rating = request.args.get('track_rating')
-    track.rating = rating
-    tags = request.args.get('tag_select')
-    print "Saving changes to " + track.title
+    # Get new title
+    new_title = request.args.get('track_title')
+    if (new_title != track.title):
+        changed = True
+        print "Title edited"
+        track.title = new_title
+    # Get new track number
+    new_number = request.args.get('track_number')
+    if (new_number != track.track_number):
+        print "Track number edited"
+        changed = True
+        track.track_number = new_number
+    # Get new rating
+    new_rating = request.args.get('track_rating')
+    if (new_rating != track.rating):
+        print "Rating edited"
+        changed = True
+        track.rating = new_rating
+    # track.rating = rating
+    new_tags = json.loads(request.args.get('track_tags'))
+    # print "Length: %s " % len(new_tags)[0]
+    if (new_tags[0]):
+        for tag in new_tags[0]:
+            tag_query = session.query(Tag_Track).filter(and_(
+                Tag_Track.track == track_id,
+                Tag_Track.tag == tag)).count()
+            # print "Found %s rows for tag %s " % (tag_query, tag)
+            if tag_query == 0:
+                print "New tag"
+                tag_track = Tag_Track(tag = tag, track = track_id)
+                session.add(tag_track)
+        session.commit()
+
+    new_times_played = request.args.get('times_played')
+    print "Saving changes to track # %s name %s rating %s" % (track_id, new_title, new_rating)
+    if (changed):
+        session.add(track)
+        session.commit()
     return("Saved")
 
 @app.route('/_ajax_track_played/')
