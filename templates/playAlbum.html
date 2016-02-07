@@ -21,13 +21,13 @@
                     $("#tag_select").each(function(){
                         tags.push($(this).val());
                     });
-                    console.log("constructing tags" + JSON.stringify(tags));
+                    console.log ("ID = " + $('input[name = "track_id"]').val());
                     $.getJSON('/_ajax_save_track', {
+                        track_id: $('input[name = "track_id"]').val(),
                         track_rating: $('#track_rating :selected').val(),
                         track_number: $('#track_number').val(),
                         track_tags: JSON.stringify(tags),
-                        track_title: $('input[name = "track_title"]').val(),
-                        track_id: track_editing
+                        track_title: $('input[name = "track_title"]').val()
                     },
                     function(data) {
                         console.log("data");
@@ -44,15 +44,18 @@
     // Convert the JSON array into local URLs
     function make_playlist(){
         {% for track in tracks %}
-            track = new Object();
-            track.title = "{{ track.title }}";
-            track.id = "{{ track.id }}"
+            track{{track.id}} = new Object();
+            track{{track.id}}.title = "{{ track.title }}";
+            track{{track.id}}.id = "{{ track.id }}";
+            track{{track.id}}.track_number = "{{ track.track_number }}";
+            track{{track.id}}.rating = "{{ track.rating }}";
+            track{{track.id}}.last_played = "{{ track.last_played }}";
             var temp_path = "{{ track.path }}".replace("&#39;","'");
             temp_path = temp_path.replace("&amp;", "&");
-            track.path = temp_path;
-            playlist.push(track);
+            track{{track.id}}.path = temp_path;
+            playlist.push(track{{track.id}});
             var item = document.createElement("li");
-            item.id = "track_" + track.id;
+            item.id = "track_" + track{{track.id}}.id;
 
             var textnode = document.createTextNode("{{ track.title }}".replace("&#39;","'").replace("&amp;", "&"));
             item.appendChild(textnode);
@@ -60,54 +63,61 @@
 
             // Set up listener for track edit
             $('#track_{{ track.id }}').click (
-                function() {
-                    track_editing = {{ track.id }};
-                    console.log("Edit track #" + track_editing);
-
-                    // Populate track edit fields
-                    $('#track_path').text("{{ track.path }}");
-                    $('#tag_select').find('option').remove();
-                    $('#track_details').show();
-                    $('#track_title').val("{{ track.title }}");
-                    $('#track_number').val("{{ track.track_number }}");
-                    $('#times_played').text("{{ track.times_played }}")
-
-                    // Send AJAX request
-                    $.getJSON('/_ajax_edit_track', { "track_id":{{ track.id }} },
-                        function(data) {
-                        console.log("processing data");
-                        var track_title = data['title'];
-                        console.log("title " + track_title);
-                        var times_played = data['times_played'];
-                        console.log("times played " + times_played);
-                        var last_played = data['last_played'];
-                        console.log("last played " + last_played);
-                        var track_number = data['track_number']
-                        var rating = data['rating'];
-                        console.log("rating " + rating);
-                        var selected_tags = JSON.stringify(data['selected_tags']);
-                        $("#track_rating").val(data.rating);
-                        // Populate select with available tags
-                        for (var i = 1; i <= Object.keys(data["all_tags"]).length; i++) {
-                            var current_tag = data["all_tags"][i];
-                            if (selected_tags.indexOf(current_tag) > 0) {
-                                $('#tag_select').append($("<option selected></option>")
-                            .attr("value",i).text(current_tag));
-                            } else {
-                                $('#tag_select').append($("<option></option>")
-                            .attr("value",i).text(current_tag));
-                            }
-                        }
-                    }).success(function() { console.log("second success"); })
-                        .error(function() { alert("error"); })
-                        .complete(function() { console.log("complete"); });
+                function()
+                {
+                    edit_track(track{{track.id}})
                 });
         {% endfor %}
+    }
+
+    function edit_track(track){
+        console.log("Edit track #" + track.id);
+
+        // Populate track edit fields
+        $('#track_path').text(track.path);
+        $('#tag_select').find('option').remove();
+        $('#track_details').show();
+        $('#track_title').val(track.title);
+        $('#track_number').val(track.track_number);
+        $('#times_played').text(track.times_played);
+        $('#track_id').val(track.id);
+
+        // Send AJAX request
+        $.getJSON('/_ajax_edit_track', { "track_id":track.id },
+            function(data) {
+            console.log("processing data");
+            var track_title = data['title'];
+            console.log("title " + track_title);
+            var times_played = data['times_played'];
+            console.log("times played " + times_played);
+            var last_played = data['last_played'];
+            console.log("last played " + last_played);
+            var track_number = data['track_number']
+            var rating = data['rating'];
+            console.log("rating " + rating);
+            var selected_tags = JSON.stringify(data['selected_tags']);
+            $("#track_rating").val(data.rating);
+            // Populate select with available tags
+            for (var i = 1; i <= Object.keys(data["all_tags"]).length; i++) {
+                var current_tag = data["all_tags"][i];
+                if (selected_tags.indexOf(current_tag) > 0) {
+                    $('#tag_select').append($("<option selected></option>")
+                .attr("value",i).text(current_tag));
+                } else {
+                    $('#tag_select').append($("<option></option>")
+                .attr("value",i).text(current_tag));
+                }
+            }
+        }).success(function() { console.log("second success"); })
+            .error(function() { alert("error"); })
+            .complete(function() { console.log("complete"); });
+
     }
 
     // Play next track
     function next_track() {
         if (track_num < playlist.length) {
+            // Update last played and times played
             $.getJSON('/_ajax_track_played', { "track_id":playlist[track_num].id }, function(data) {
                     console.log(data)
                     $("#title").text(data.title);
@@ -147,6 +157,7 @@
         <button type = "button" id = "submit_change">Submit</button>&nbsp;
         <button type = "button" id = "cancel_change">Cancel</button>
         <p id = "track_path" style="color: #888;"></p>
+        <input type = "hidden" name = "track_id" id = "track_id"/>
         <label for="track_title">Title:&nbsp;</label>
             <input type = "text" name = "track_title" id = "track_title" size = 30 />
         <label for="track_number">Track #:&nbsp;</label>
