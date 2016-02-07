@@ -89,7 +89,6 @@
                         $("#track_rating").val(data.rating);
                         // Populate select with available tags
                         for (var i = 1; i <= Object.keys(data["all_tags"]).length; i++) {
-                            console.log("Adding tag: " + data["all_tags"][i])
                             var current_tag = data["all_tags"][i];
                             if (selected_tags.indexOf(current_tag) > 0) {
                                 $('#tag_select').append($("<option selected></option>")
