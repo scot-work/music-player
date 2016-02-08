@@ -195,10 +195,15 @@ def albumDetails(album_id):
 @app.route('/album/<int:album_id>/play/')
 def playAlbum(album_id):
     album = session.query(Album).filter_by(id = album_id).one()
+    performer = session.query(Performer).filter_by(id = album.performer).one()
     album_tracks = session.query(Track).filter_by(album
         = album_id).order_by(Track.track_number)
-    return render_template('playAlbum.html', tracks = album_tracks,
-        album_title = album.title)
+
+    return render_template('playAlbum.html',
+        tracks = album_tracks,
+        album_title = album.title,
+        album_year = album.year,
+        album_performer = performer.name)
 
 @app.route('/tag/')
 def listTags():
@@ -352,6 +357,7 @@ def trackPlayed():
     return jsonify(json_response)
     #return jsonify(result = str(reply))
 
+# Scan a directory for music files
 def recurse(path, artist_set, album_set):
     print "Scanning path " + path
     file_list = os.listdir(path)
@@ -406,21 +412,28 @@ def recurse(path, artist_set, album_set):
                 performer_id = performer.id
             else:
                 # add to db
-                newPerformer = Performer(name = performer_name,
+                print "Adding performer %s to database" % performer_name
+                new_performer = Performer(name = performer_name,
                     sort_name = performer_name)
-                session.add(newPerformer)
-                performer_id = newPerformer.id
+                session.add(new_performer)
                 session.commit()
+                performer = session.query(Performer).filter_by(name
+                    = performer_name).first()
+                performer_id = performer.id
+                print "added performer %s with id %s" % (new_performer.name, performer.id)
 
-            # TODO Check for performer to eliminate duplicate album titles (II)
+            print "Query for album %s by artist %s" % (track_album, performer_id)
             album_query = session.query(Album).filter(and_
                 (Album.title == track_album,
                 Album.performer == performer_id))
 
             if (album_query.count() > 0):
                 album = album_query.first()
+                print "Found album, performer is %s " % album.performer
                 album_id = album.id
             else:
+                # Album is not in database yet
+                print "Creating new album %s %s" % (track_album, performer_id)
                 album = Album(
                     title = track_album,
                     year = track_date,

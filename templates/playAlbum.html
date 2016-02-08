@@ -144,7 +144,8 @@
 <body >
     {% block left %}
     <h1>{{ album_title }}</h1>
-    <h2 id = "playing" style="font-weight:bold;"></h2>&nbsp;
+    <h2>{{ album_performer }} {{ album_year}}</h2>
+    <h3 id = "playing" style="font-weight:bold;"></h3>&nbsp;
     <a href="javascript:next_track();"><button type="button">Skip</button></a>
     <audio controls id="audio" onended="next_track()" ></audio>
     <h3>Tracks</h3>
