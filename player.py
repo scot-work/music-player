@@ -178,11 +178,18 @@ def listAlbums():
     albums = session.query(Album).all()
     return render_template('listAlbums.html', albums = albums)
 
-@app.route('/album/<int:album_id>/tag')
-def tagAlbum(album_id):
-    album = session.query(Album).filter_by(id = album_id).one()
-    tags = session.query(Tag).all()
-    return render_template('tagAlbum.html', album = album, tags = tags)
+@app.route('/album/<int:album_id>/delete', methods=['GET', 'POST'])
+def deleteAlbum(album_id):
+    albumToDelete = session.query(
+        Album).filter_by(id = album_id).one()
+    if request.method == 'POST':
+        session.delete(albumToDelete)
+        session.commit()
+        return redirect(
+            url_for('listAlbums', album_id = album_id))
+    else:
+        return render_template(
+            'deleteAlbum.html', album = albumToDelete)
 
 @app.route('/album/<int:album_id>/')
 def albumDetails(album_id):
@@ -287,6 +294,7 @@ def updateTrack():
 # Save changes to the database
 @app.route('/_ajax_save_track')
 def saveTrack():
+    print "Saving track changes"
     changed = False
     # Get track ID from AJAX request
     track_id = request.args.get('track_id')
@@ -412,7 +420,6 @@ def recurse(path, artist_set, album_set):
                 performer_id = performer.id
             else:
                 # add to db
-                print "Adding performer %s to database" % performer_name
                 new_performer = Performer(name = performer_name,
                     sort_name = performer_name)
                 session.add(new_performer)
@@ -420,20 +427,17 @@ def recurse(path, artist_set, album_set):
                 performer = session.query(Performer).filter_by(name
                     = performer_name).first()
                 performer_id = performer.id
-                print "added performer %s with id %s" % (new_performer.name, performer.id)
 
-            print "Query for album %s by artist %s" % (track_album, performer_id)
+            # Find out if album is in database
             album_query = session.query(Album).filter(and_
                 (Album.title == track_album,
                 Album.performer == performer_id))
 
             if (album_query.count() > 0):
                 album = album_query.first()
-                print "Found album, performer is %s " % album.performer
                 album_id = album.id
             else:
-                # Album is not in database yet
-                print "Creating new album %s %s" % (track_album, performer_id)
+                # Add album to database
                 album = Album(
                     title = track_album,
                     year = track_date,
@@ -457,7 +461,6 @@ def recurse(path, artist_set, album_set):
                     times_played = 0)
                 session.add(newTrack)
                 session.commit()
-
         if os.path.isdir(path + '/' + str(file)):
             recurse(path + '/' + file, artist_set, album_set)
 

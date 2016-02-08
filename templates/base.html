@@ -11,7 +11,7 @@
 <body {% block onload %} {% endblock %}>
 
 <div class = "top-navigation">
-        <ul >
+    <ul >
         <li><a href = "{{ url_for('home') }}">Home</a></li>
         <li><a href = "{{ url_for('listPerformers') }}">Performers</a></li>
         <li><a href = "{{ url_for('listAlbums')}}">Albums</a></li>
@@ -20,6 +20,8 @@
         <li><a href = "{{ url_for('listTags') }}">Tags</a></li>
         <li><a href = "{{ url_for('listTracks') }}">Tracks</a></li>
     </ul>
+    {% block navigation %}
+    {% endblock %}
 </div>
 
 <div class = "main">

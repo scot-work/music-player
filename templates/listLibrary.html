@@ -7,26 +7,57 @@
     {% endblock %}
 </head>
 <body>
+    {% block navigation %}
+    <a href="#A">A</a>
+    <a href="#B">B</a>
+    <a href="#C">C</a>
+    <a href="#D">D</a>
+    <a href="#E">E</a>
+    <a href="#F">F</a>
+    <a href="#G">G</a>
+    <a href="#H">H</a>
+    <a href="#I">I</a>
+    <a href="#J">J</a>
+    <a href="#K">K</a>
+    <a href="#L">L</a>
+    <a href="#M">M</a>
+    <a href="#N">N</a>
+    <a href="#O">O</a>
+    <a href="#P">P</a>
+    <a href="#Q">Q</a>
+    <a href="#R">R</a>
+    <a href="#S">S</a>
+    <a href="#T">T</a>
+    <a href="#U">U</a>
+    <a href="#V">V</a>
+    <a href="#W">W</a>
+    <a href="#X">X</a>
+    <a href="#Y">Y</a>
+    <a href="#Z">Z</a>
+    {% endblock %}
+
     {% block left %}
     <h1>Library</h1>
-    <ul>
-        {% for performer in performers %}
-        <li>{{ performer.sort_name }}
+    {% set section = "" %}
+    {% for performer in performers %}
+        {% set first_char = performer.sort_name[:1 ] %}
+        {% if first_char != section %}
+            {% set section = first_char %}
+            <h2 id = "{{ section }}">{{ section }}</h2>
+        {% endif %}
+        <div><p>{{ performer.sort_name }}</p>
             <ul>
                 {% for album in performer.albums %}
                 <li>
                     <a href="{{ url_for('albumDetails', album_id = album.id) }}">{{ album.title }}</a><br />
                     <a href="{{ url_for('playAlbum', album_id = album.id) }}">
-                    <button type="button">Play</button></a>&nbsp;
-                    <a href="{{ url_for('tagAlbum', album_id = album.id) }}">
-                    <button type = "button">Tag</button>
+                    <button type="button">Play</button></a>
                     </a>
                 </li>
                 {% endfor %}
             </ul>
-        </li>
+        </div>
         {% endfor %}
-    </ul>
     {% endblock %}
 </body>
 </html>

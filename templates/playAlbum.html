@@ -21,7 +21,6 @@
                     $("#tag_select").each(function(){
                         tags.push($(this).val());
                     });
-                    console.log ("ID = " + $('input[name = "track_id"]').val());
                     $.getJSON('/_ajax_save_track', {
                         track_id: $('input[name = "track_id"]').val(),
                         track_rating: $('#track_rating :selected').val(),
@@ -30,7 +29,7 @@
                         track_title: $('input[name = "track_title"]').val()
                     },
                     function(data) {
-                        console.log("data");
+                        console.log("Track saved");
                     });
                     $('#track_details').hide();
                 }
@@ -71,7 +70,6 @@
     }
 
     function edit_track(track){
-        console.log("Edit track #" + track.id);
 
         // Populate track edit fields
         $('#track_path').text(track.path);
@@ -81,20 +79,16 @@
         $('#track_number').val(track.track_number);
         $('#times_played').text(track.times_played);
         $('#track_id').val(track.id);
-
+        console.log("Editing track #" + track.id);
         // Send AJAX request
-        $.getJSON('/_ajax_edit_track', { "track_id":track.id },
+        $.getJSON('/_ajax_edit_track', { "track_id": track.id },
             function(data) {
-            console.log("processing data");
+            console.log("processing AJAX edit reply data");
             var track_title = data['title'];
-            console.log("title " + track_title);
             var times_played = data['times_played'];
-            console.log("times played " + times_played);
             var last_played = data['last_played'];
-            console.log("last played " + last_played);
             var track_number = data['track_number']
             var rating = data['rating'];
-            console.log("rating " + rating);
             var selected_tags = JSON.stringify(data['selected_tags']);
             $("#track_rating").val(data.rating);
             // Populate select with available tags
@@ -109,8 +103,8 @@
                 }
             }
         }).success(function() { console.log("second success"); })
-            .error(function() { alert("error"); })
-            .complete(function() { console.log("complete"); });
+            .error(function() { alert("AJAX error"); })
+            .complete(function() { console.log("AJAX complete"); });
 
     }
 
@@ -119,7 +113,6 @@
         if (track_num < playlist.length) {
             // Update last played and times played
             $.getJSON('/_ajax_track_played', { "track_id":playlist[track_num].id }, function(data) {
-                    console.log(data)
                     $("#title").text(data.title);
                     $("#rating").text(data.rating);
                     $("#times_played").text(data.times_played);
