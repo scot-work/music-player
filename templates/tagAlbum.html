@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+<!doctype html>
+<html>
+<head>
+    {% block head %}
+    <title>Tag Album</title>
+    {% endblock %}
+</head>
+<body>
+    {% block left %}
+    <h1>Tag Album {{ album.title }}</h1>
+    <!-- title = Column(String(250), nullable=False)
+    year = Column(Integer)
+    performer = Column(Integer, ForeignKey('performer.id'))
+    genre = Column(Integer, ForeignKey('genre.id'))
+    tracks = relationship('Track', backref="track") -->
+    <form action = "{{ url_for('tagAlbum', album_id = album.id) }}" method = "post">
+        <select multiple size = {{ tags|length }} name = "tags" id = "tags">
+        {% for tag in tags %}
+            <option value = "{{ tag.id }}">{{ tag.name }}</option>
+        {% endfor %}
+        </select>
+        <p><input type = "submit" value = "Submit" /></p>
+    </form>
+    {% endblock %}
+</body>
+</html>

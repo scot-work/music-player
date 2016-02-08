@@ -173,9 +173,7 @@ def showLibrary():
 # Show albums
 @app.route('/album/')
 def listAlbums():
-    # albums = session.query(Album).order_by(Album.performer).all()
-    # session.query(User).join(Address, User.id==Address.user_id)
-    albums = session.query(Album).all()
+    albums = session.query(Album).order_by(Album.title).all()
     return render_template('listAlbums.html', albums = albums)
 
 @app.route('/album/<int:album_id>/delete', methods=['GET', 'POST'])
@@ -190,6 +188,45 @@ def deleteAlbum(album_id):
     else:
         return render_template(
             'deleteAlbum.html', album = albumToDelete)
+
+@app.route('/album/<int:album_id>/edit', methods=['GET', 'POST'])
+def editAlbum(album_id):
+    albumToEdit = session.query(
+        Album).filter_by(id = album_id).one()
+    if request.method == 'POST':
+        # Make changes here
+        session.commit()
+        return redirect(
+            url_for('listAlbums', album_id = album_id))
+    else:
+        return render_template(
+            'editAlbum.html', album = albumToEdit)
+
+@app.route('/album/<int:album_id>/tag', methods=['GET', 'POST'])
+def tagAlbum(album_id):
+    albumToEdit = session.query(
+        Album).filter_by(id = album_id).one()
+    tags = session.query(Tag).order_by(Tag.name).all()
+    tracks = albumToEdit.tracks
+    if request.method == 'POST':
+        if request.form['tags']:
+            tags_to_add = request.form.getlist('tags')
+            for tag in tags_to_add:
+                print "found tag # %s" % tag
+                for track in tracks:
+                    print "Adding tag to track %s" % track.title
+                    tag_count = session.query(Tag_Track).filter(
+                        and_(Tag_Track.tag == tag,
+                        Tag_Track.track == track.id)).count()
+                    if tag_count == 0:
+                        tag_track = Tag_Track(tag = tag, track = track.id)
+                        session.add(tag_track)
+            session.commit()
+        return redirect(
+            url_for('listAlbums', album_id = album_id))
+    else:
+        return render_template(
+            'tagAlbum.html', album = albumToEdit, tags = tags)
 
 @app.route('/album/<int:album_id>/')
 def albumDetails(album_id):
@@ -227,6 +264,17 @@ def newTag():
     else:
         return render_template('newTag.html')
 
+@app.route('/tag/<int:tag_id>')
+def listTagTracks(tag_id):
+    tag_tracks = session.query(Tag_Track).filter_by(tag = tag_id).all()
+    track_list = []
+    for tag_track in tag_tracks:
+        print "tag_track: %s" % tag_track.track
+        track = session.query(Track).filter_by(id = tag_track.track).one()
+        track_list.append(track)
+    # return render_template('listTagTracks.html', tracks = track_list)
+    return render_template('playAlbum.html', tracks = track_list)
+
 # Scan for tracks
 @app.route('/scan/')
 def scan():
@@ -257,26 +305,19 @@ def updateTrack():
     print "Updating track"
     # Get the track ID from the AJAX request
     track_id = request.args.get('track_id')
-    print "Got track id %s" % track_id
     # Get the track object from the DB
     track = session.query(Track).filter_by(id = track_id).one()
     # Get tags associated with this track
     selected_tags_query = session.query(Tag_Track).filter_by(
         track = track.id).all()
-    print "Got selected tags"
     # Get all available tags
     all_tags_query = session.query(Tag).all()
-    print "Got all tags"
     all_tags = {}
     for tag in all_tags_query:
         all_tags[tag.id] = tag.name
     selected_tags = {}
     for tag in selected_tags_query:
-        print "Selected tags"
-        print "id: " + str(tag.id)
-        print "tag id: " + str(tag.tag)
         tag_name_query = session.query(Tag).filter_by(id = tag.tag).one()
-        print tag_name_query.name
         selected_tags[tag.tag] = tag_name_query.name
 
     json_response = {}

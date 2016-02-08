@@ -13,7 +13,7 @@
     <ul>
         {% for tag in tags %}
         <li>
-            {{ tag.name }}
+            <a href="{{ url_for('listTagTracks', tag_id = tag.id) }}">{{ tag.name }}</a>
         </li>
         {% endfor %}
     </ul>

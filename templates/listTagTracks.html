@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+<!doctype html>
+<html>
+<head>
+    {% block head %}
+    <title>Tracks with Tag</title>
+    {% endblock %}
+</head>
+<body>
+    {% block left %}
+    <h1>Tracks</h1>
+    <ul>
+        {% for track in tracks %}
+        <li>
+            {{ track.title }}
+        </li>
+        {% endfor %}
+    </ul>
+    {% endblock %}
+</body>
+</html>

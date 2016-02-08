@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+<!doctype html>
+<html>
+<head>
+<title>Delete Album</title>
+</head>
+<body>
+    {% block left %}
+    <form method = "POST" action = "{{ url_for('deleteAlbum', album_id = album.id) }}">
+        <input type="submit" value="Delete {{ album.title }}?" />
+    </form>
+    {% endblock %}
+</body>
+</html>
