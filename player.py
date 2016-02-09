@@ -4,10 +4,7 @@ from sqlalchemy.orm import sessionmaker
 from database_setup import Base, Track, Performer, Album, Tag, Tag_Track
 from mutagen.mp3 import MP3
 from mutagen.easyid3 import EasyID3
-import os
-import json
-import string
-import datetime
+import os, random, json, string, datetime
 
 app = Flask(__name__)
 
@@ -273,7 +270,7 @@ def listTagTracks(tag_id):
         track = session.query(Track).filter_by(id = tag_track.track).one()
         track_list.append(track)
     # return render_template('listTagTracks.html', tracks = track_list)
-    return render_template('playAlbum.html', tracks = track_list)
+    return render_template('playAlbum.html', tracks = shuffle(track_list))
 
 # Scan for tracks
 @app.route('/scan/')
@@ -537,6 +534,18 @@ def isNotEmptyString(s):
         return True
     else:
         return False
+
+def shuffle(tracks):
+    random.seed()
+    a = len(tracks)
+    b = a - 1
+    for d in range(b, 0, -1):
+        e = random.randint(0, d)
+        if e == d:
+            continue
+        tracks[d], tracks[e] =  tracks[e], tracks[d]
+    return tracks
+
 app.jinja_env.filters['isNotEmptyString'] = isNotEmptyString
 
 if __name__ == '__main__':

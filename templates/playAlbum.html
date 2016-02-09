@@ -67,10 +67,10 @@
                     edit_track(track{{track.id}})
                 });
         {% endfor %}
+        // playlist = shuffle(playlist)
     }
 
     function edit_track(track){
-
         // Populate track edit fields
         $('#track_path').text(track.path);
         $('#tag_select').find('option').remove();
@@ -131,7 +131,23 @@
         }
     }
 
-</script>
+    function shuffle(array) {
+        // Fisher-Yates
+        var m = array.length, t, i;
+        // While there remain elements to shuffle…
+         while (m) {
+            // Pick a remaining element…
+            i = Math.floor(Math.random() * m--);
+
+            // And swap it with the current element.
+            t = array[m];
+            array[m] = array[i];
+            array[i] = t;
+        }
+        return array;
+    }
+
+    </script>
 {% endblock %}
 </head>
 <body >
