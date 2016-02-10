@@ -38,6 +38,7 @@
 
     {% block left %}
     <h1>Library</h1>
+    <a href = "{{ url_for('playRandomAlbum')}}"><button type = "button">Play a Random Album</button></a>
     {% set section = "" %}
     {% for performer in performers %}
         {% set first_char = performer.sort_name[:1 ] %}

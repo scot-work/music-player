@@ -27,7 +27,7 @@
                     track_title: $('input[name = "track_title"]').val()
                 },
                 function(data) {
-                    alert("Track saved");
+                    console.log(data.response);
                 });
                 $('#track_details').hide();
             }
@@ -67,6 +67,7 @@
     }
 
     function edit_track(track){
+        console.log("Editing track " + track.title)
         // Populate track edit fields
         $('#track_path').text(track.path);
         $('#tag_select').find('option').remove();
@@ -100,9 +101,7 @@
                         .attr("value",i).text(current_tag));
                 }
             }
-        }).success(function() { console.log("AJAX success"); })
-            .error(function() { alert("AJAX error"); })
-            .complete(function() { console.log("AJAX complete"); });
+        }).success().error(function() { alert("AJAX error"); }).complete();
     }
 
     // Play next track
@@ -110,6 +109,7 @@
         if (track_num < playlist.length) {
             // Update last played and times played
             $.getJSON('/_ajax_track_played', { "track_id": playlist[track_num].id }, function(data) {
+                console.log(data);
                 });
             $("#audio").attr("src", playlist[track_num].path);
             var display_name = playlist[track_num].title;
@@ -127,8 +127,10 @@
 </head>
 <body >
     {% block left %}
+    {% if album_title %}
     <h1>{{ album_title }}</h1>
-    <h2>{{ album_performer }} {{ album_year}}</h2>
+    <h2>{{ album_performer }} ({{ album_year}})</h2>
+    {% endif %}
     <h3 id = "playing" style = "font-weight:bold;"></h3>&nbsp;
     <a href="javascript:next_track();"><button type="button">Skip</button></a>
     <audio controls id = "audio" onended = "next_track()" ></audio>

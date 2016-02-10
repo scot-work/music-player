@@ -5,6 +5,7 @@ from database_setup import Base, Track, Performer, Album, Tag, Tag_Track
 from mutagen.mp3 import MP3
 from mutagen.easyid3 import EasyID3
 import os, random, json, string, datetime
+from random import randrange
 
 app = Flask(__name__)
 
@@ -239,6 +240,12 @@ def albumDetails(album_id):
     return render_template('albumDetails.html', album = album,
         tracks = album_tracks)
 
+@app.route('/album/random/')
+def playRandomAlbum():
+    album_count = session.query(Album).count()
+    random_index = randrange(0, album_count)
+    return redirect(url_for('playAlbum', album_id = random_index))
+
 @app.route('/album/<int:album_id>/play/')
 def playAlbum(album_id):
     # Get album based on ID
@@ -248,13 +255,6 @@ def playAlbum(album_id):
     # Get album tracks in order
     album_tracks = session.query(Track).filter_by(album
         = album_id).order_by(Track.track_number)
-
-    ''' DEBUGGING TRACK TITLES '''
-    for track in album_tracks:
-        print "Track title: %s" % track.title
-        print "Track path: %s" % track.path
-
-    ''' DEBUGGING TRACK TITLES '''
 
     return render_template('playAlbum.html',
         tracks = album_tracks,
@@ -305,14 +305,6 @@ def test():
     message = request.args.get('message')
     return jsonify(result = str(message))
 
-''' Someone has clicked a track name, and wants to update track info
-    Return all info that can be edited:
-    title
-    track_number
-    rating
-    times_played
-    last_played
-'''
 @app.route('/_ajax_edit_track')
 def updateTrack():
     print "Editing track"
@@ -386,24 +378,17 @@ def saveTrack():
     if (changed):
         # session.add(track)
         session.commit()
-    return("Saved")
+    return jsonify(response = "Track saved")
 
 @app.route('/_ajax_track_played/')
 def trackPlayed():
     track_id = request.args.get('track_id')
-    # Get track from db
     track = session.query(Track).filter_by(id = track_id).one()
-    # times_played = track.times_played
     track.last_played = datetime.datetime.now()
     track.times_played = track.times_played + 1
-    # session.add(track)
+    print "updating track history for %s" % track.title
     session.commit()
-    json_response = {}
-    json_response['title'] = track.title
-    json_response['rating'] = track.rating
-    json_response['times_played'] = str(track.times_played)
-    json_response['last_played'] = str(track.last_played)
-    return jsonify(json_response)
+    return jsonify(response = "Updated track history")
 
 # Scan a directory for music files
 def recurse(path, artist_set, album_set):
