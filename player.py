@@ -70,7 +70,7 @@ def editTrack(track_id):
         if request.form['transitions_to']:
             editedTrack.transitions_to = request.form['transitions_to']
             print "transitions to"
-        session.add(editedTrack)
+        # session.add(editedTrack)
         session.commit()
         return redirect(url_for('listTracks'))
     else:
@@ -119,7 +119,7 @@ def editPerformer(performer_id):
             editedPerformer.name = request.form['name']
         if request.form['sort_name']:
             editedPerformer.sort_name = request.form['sort_name']
-        session.add(editedPerformer)
+        # session.add(editedPerformer)
         session.commit()
         return redirect(url_for('listPerformers'))
     else:
@@ -163,7 +163,7 @@ def trackInfo():
 
 # Show performers and albums
 @app.route('/library/')
-def showLibrary():
+def listLibrary():
     performers = session.query(Performer).order_by(Performer.sort_name).all()
     return render_template('listLibrary.html', performers = performers)
 
@@ -199,19 +199,24 @@ def editAlbum(album_id):
         return render_template(
             'editAlbum.html', album = albumToEdit)
 
+# Add a tag to every track in an album
 @app.route('/album/<int:album_id>/tag', methods=['GET', 'POST'])
 def tagAlbum(album_id):
+    # Get album from database
     albumToEdit = session.query(
         Album).filter_by(id = album_id).one()
+    # Get list of all tags
     tags = session.query(Tag).order_by(Tag.name).all()
+    # Get list of album tracks
     tracks = albumToEdit.tracks
+    # Process POST
     if request.method == 'POST':
         if request.form['tags']:
+            # Get selected tags
             tags_to_add = request.form.getlist('tags')
             for tag in tags_to_add:
-                print "found tag # %s" % tag
                 for track in tracks:
-                    print "Adding tag to track %s" % track.title
+                    # Check for existing tags
                     tag_count = session.query(Tag_Track).filter(
                         and_(Tag_Track.tag == tag,
                         Tag_Track.track == track.id)).count()
@@ -220,7 +225,8 @@ def tagAlbum(album_id):
                         session.add(tag_track)
             session.commit()
         return redirect(
-            url_for('listAlbums', album_id = album_id))
+            url_for('listLibrary'))
+    # Process GET
     else:
         return render_template(
             'tagAlbum.html', album = albumToEdit, tags = tags)
@@ -308,7 +314,7 @@ def updateTrack():
     selected_tags_query = session.query(Tag_Track).filter_by(
         track = track.id).all()
     # Get all available tags
-    all_tags_query = session.query(Tag).all()
+    all_tags_query = session.query(Tag).order_by(Tag.name).all()
     all_tags = {}
     for tag in all_tags_query:
         all_tags[tag.id] = tag.name
@@ -325,36 +331,29 @@ def updateTrack():
     json_response['last_played'] = str(track.last_played)
     json_response['all_tags'] = all_tags
     json_response['selected_tags'] = selected_tags
-    print "returning response"
-    print json_response
     return jsonify(json_response)
 
 # Save changes to the database
 @app.route('/_ajax_save_track')
 def saveTrack():
-    print "Saving track changes"
     changed = False
     # Get track ID from AJAX request
     track_id = request.args.get('track_id')
-
     # Get the track from the DB
     track = session.query(Track).filter_by(id = track_id).one()
     # Get new title
     new_title = request.args.get('track_title')
     if (new_title != track.title):
         changed = True
-        print "Title edited"
         track.title = new_title
     # Get new track number
     new_number = request.args.get('track_number')
     if (new_number != track.track_number):
-        print "Track number edited"
         changed = True
         track.track_number = new_number
     # Get new rating
     new_rating = request.args.get('track_rating')
     if (new_rating != track.rating):
-        print "Rating edited"
         changed = True
         track.rating = new_rating
     # track.rating = rating
@@ -375,33 +374,26 @@ def saveTrack():
     new_times_played = request.args.get('times_played')
     print "Saving changes to track # %s name %s rating %s" % (track_id, new_title, new_rating)
     if (changed):
-        session.add(track)
+        # session.add(track)
         session.commit()
     return("Saved")
 
 @app.route('/_ajax_track_played/')
 def trackPlayed():
     track_id = request.args.get('track_id')
-
     # Get track from db
     track = session.query(Track).filter_by(id = track_id).one()
-    times_played = track.times_played
-
-    # Update last played
+    # times_played = track.times_played
     track.last_played = datetime.datetime.now()
-    track.times_played = times_played + 1
-    session.add(track)
+    track.times_played = track.times_played + 1
+    # session.add(track)
     session.commit()
-
     json_response = {}
     json_response['title'] = track.title
     json_response['rating'] = track.rating
     json_response['times_played'] = str(track.times_played)
-
-    print json_response
-
+    json_response['last_played'] = str(track.last_played)
     return jsonify(json_response)
-    #return jsonify(result = str(reply))
 
 # Scan a directory for music files
 def recurse(path, artist_set, album_set):
@@ -409,7 +401,7 @@ def recurse(path, artist_set, album_set):
     file_list = os.listdir(path)
     for file in file_list:
         if file.endswith('.mp3'):
-
+            # TODO include other filetypes (mp4?. ogg?)
             # Get ID3 tags from track
             audio = MP3(path + '/' + str(file), ID3 = EasyID3)
 
@@ -433,7 +425,6 @@ def recurse(path, artist_set, album_set):
                 performer_name = "unknown"
             else:
                 performer_name = audio['artist'][0]
-
             artist_set.add(performer_name)
 
             # Album
@@ -484,12 +475,12 @@ def recurse(path, artist_set, album_set):
                 session.commit()
                 album_id = album.id
 
-            # Check for duplicate
+            # Check for duplicates
             track_query = session.query(Track).filter(and_
                 (Track.title == track_title,
                 Track.album == album.id))
             if (not track_query.count() > 0):
-              # Create track
+                # Create track
                 newTrack = Track(title = track_title,
                     album = album_id,
                     path = localPath(path + '/' + str(file)),
@@ -503,12 +494,9 @@ def recurse(path, artist_set, album_set):
             recurse(path + '/' + file, artist_set, album_set)
 
 def localPath(absolute_path):
+    # TODO: clean up special characters?
     path_start = absolute_path.index("/static")
-    # path_start = absolute_path.indexOf("/static")
-    # return absolute_path.substring(path_start)
-    # remove &#39;, replace with '
     result = absolute_path[path_start:]
-    # result.replace("&#39;", "'")
     return result
 
 def showAsLink(path, file):
@@ -516,7 +504,6 @@ def showAsLink(path, file):
         if os.path.isdir(path + '/' + file):
             return True
         else:
-            #print("not a dir: " + path + '/' + file)
             return False
     else:
         return False
@@ -535,15 +522,16 @@ def isNotEmptyString(s):
     else:
         return False
 
+# Shuffle playlist (Fisher-Yates)
 def shuffle(tracks):
     random.seed()
-    a = len(tracks)
-    b = a - 1
-    for d in range(b, 0, -1):
-        e = random.randint(0, d)
-        if e == d:
-            continue
-        tracks[d], tracks[e] =  tracks[e], tracks[d]
+    track_count = len(tracks) - 1
+    for remaining_tracks in range(track_count, 0, -1):
+        random_track = random.randint(0, remaining_tracks)
+        if random_track == remaining_tracks:
+            continue # No point in swapping with same track
+        tracks[remaining_tracks], tracks[random_track] = \
+        tracks[random_track], tracks[remaining_tracks]
     return tracks
 
 app.jinja_env.filters['isNotEmptyString'] = isNotEmptyString

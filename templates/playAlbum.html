@@ -55,7 +55,6 @@
             playlist.push(track{{track.id}});
             var item = document.createElement("li");
             item.id = "track_" + track{{track.id}}.id;
-
             var textnode = document.createTextNode("{{ track.title }}".replace("&#39;","'").replace("&amp;", "&"));
             item.appendChild(textnode);
             $("#track_list").append(item);
@@ -67,7 +66,6 @@
                     edit_track(track{{track.id}})
                 });
         {% endfor %}
-        // playlist = shuffle(playlist)
     }
 
     function edit_track(track){
@@ -91,6 +89,7 @@
             var rating = data['rating'];
             var selected_tags = JSON.stringify(data['selected_tags']);
             $("#track_rating").val(data.rating);
+
             // Populate select with available tags
             for (var i = 1; i <= Object.keys(data["all_tags"]).length; i++) {
                 var current_tag = data["all_tags"][i];
@@ -129,22 +128,6 @@
             }
             track_num = track_num + 1;
         }
-    }
-
-    function shuffle(array) {
-        // Fisher-Yates
-        var m = array.length, t, i;
-        // While there remain elements to shuffle…
-         while (m) {
-            // Pick a remaining element…
-            i = Math.floor(Math.random() * m--);
-
-            // And swap it with the current element.
-            t = array[m];
-            array[m] = array[i];
-            array[i] = t;
-        }
-        return array;
     }
 
     </script>
