@@ -305,7 +305,7 @@ def test():
 '''
 @app.route('/_ajax_edit_track')
 def updateTrack():
-    print "Updating track"
+    print "Editing track"
     # Get the track ID from the AJAX request
     track_id = request.args.get('track_id')
     # Get the track object from the DB

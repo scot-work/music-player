@@ -7,32 +7,30 @@
 
     var playlist = new Array();
     var track_num;
-    // var ajax_url;
 
     $(function() {
         $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
-        // ajax_url = $SCRIPT_ROOT + '/_ajax_track_played';
         track_num = 0;
         make_playlist();
 
         $('#submit_change').click (
-                function() {
-                    var tags = new Array();
-                    $("#tag_select").each(function(){
-                        tags.push($(this).val());
-                    });
-                    $.getJSON('/_ajax_save_track', {
-                        track_id: $('input[name = "track_id"]').val(),
-                        track_rating: $('#track_rating :selected').val(),
-                        track_number: $('#track_number').val(),
-                        track_tags: JSON.stringify(tags),
-                        track_title: $('input[name = "track_title"]').val()
-                    },
-                    function(data) {
-                        console.log("Track saved");
-                    });
-                    $('#track_details').hide();
-                }
+            function() {
+                var tags = new Array();
+                $("#tag_select").each(function(){
+                    tags.push($(this).val());
+                });
+                $.getJSON('/_ajax_save_track', {
+                    track_id: $('input[name = "track_id"]').val(),
+                    track_rating: $('#track_rating :selected').val(),
+                    track_number: $('#track_number').val(),
+                    track_tags: JSON.stringify(tags),
+                    track_title: $('input[name = "track_title"]').val()
+                },
+                function(data) {
+                    alert("Track saved");
+                });
+                $('#track_details').hide();
+            }
         );
         $('#cancel_change').click ( function() {
             $('#track_details').hide();
@@ -43,19 +41,23 @@
     // Convert the JSON array into local URLs
     function make_playlist(){
         {% for track in tracks %}
-            track{{track.id}} = new Object();
-            track{{track.id}}.title = "{{ track.title }}";
-            track{{track.id}}.id = "{{ track.id }}";
-            track{{track.id}}.track_number = "{{ track.track_number }}";
-            track{{track.id}}.rating = "{{ track.rating }}";
-            track{{track.id}}.last_played = "{{ track.last_played }}";
-            var temp_path = "{{ track.path }}".replace("&#39;","'");
-            temp_path = temp_path.replace("&amp;", "&");
-            track{{track.id}}.path = temp_path;
-            playlist.push(track{{track.id}});
+            track{{ track.id }} = new Object();
+            track{{ track.id }}.title = "{{ track.title }}";
+            track{{ track.id }}.id = "{{ track.id }}";
+            track{{ track.id }}.track_number = "{{ track.track_number }}";
+            track{{ track.id }}.rating = "{{ track.rating }}";
+            console.log("Last played: {{ track.last_played }}");
+            track{{ track.id }}.last_played = "{{ track.last_played }}";
+            track{{ track.id }}.times_played = "{{ track.times_played }}";
+            //var temp_path = "{{ track.path }}".replace("&#39;","'");
+            var temp_path = unescape("{{ track.path }}");
+            // temp_path = temp_path.replace("&amp;", "&");
+            track{{ track.id }}.path = temp_path;
+            playlist.push(track{{ track.id }});
             var item = document.createElement("li");
-            item.id = "track_" + track{{track.id}}.id;
-            var textnode = document.createTextNode("{{ track.title }}".replace("&#39;","'").replace("&amp;", "&"));
+            item.id = "track_" + track{{ track.id }}.id;
+            // var textnode = document.createTextNode("{{ track.title }}".replace("&#39;","'").replace("&amp;", "&"));
+            var textnode = document.createTextNode(unescape("{{ track.title }}"));
             item.appendChild(textnode);
             $("#track_list").append(item);
 
@@ -63,7 +65,8 @@
             $('#track_{{ track.id }}').click (
                 function()
                 {
-                    edit_track(track{{track.id}})
+                    //edit_track(track{{track.id}})
+                    edit_track(track{{ track.id }})
                 });
         {% endfor %}
     }
@@ -77,6 +80,10 @@
         $('#track_number').val(track.track_number);
         $('#times_played').text(track.times_played);
         $('#track_id').val(track.id);
+        $("#last_played").text(track.last_played);
+                    // $("#times_played").text(data.times_played);
+                    // $("#last_played").text(data.last_played);
+
         console.log("Editing track #" + track.id);
         // Send AJAX request
         $.getJSON('/_ajax_edit_track', { "track_id": track.id },
@@ -85,7 +92,7 @@
             var track_title = data['title'];
             var times_played = data['times_played'];
             var last_played = data['last_played'];
-            var track_number = data['track_number']
+            var track_number = data['track_number'];
             var rating = data['rating'];
             var selected_tags = JSON.stringify(data['selected_tags']);
             $("#track_rating").val(data.rating);
@@ -95,16 +102,15 @@
                 var current_tag = data["all_tags"][i];
                 if (selected_tags.indexOf(current_tag) > 0) {
                     $('#tag_select').append($("<option selected></option>")
-                .attr("value",i).text(current_tag));
+                        .attr("value",i).text(current_tag));
                 } else {
                     $('#tag_select').append($("<option></option>")
-                .attr("value",i).text(current_tag));
+                        .attr("value",i).text(current_tag));
                 }
             }
         }).success(function() { console.log("second success"); })
             .error(function() { alert("AJAX error"); })
             .complete(function() { console.log("AJAX complete"); });
-
     }
 
     // Play next track
@@ -112,15 +118,16 @@
         if (track_num < playlist.length) {
             // Update last played and times played
             $.getJSON('/_ajax_track_played', { "track_id":playlist[track_num].id }, function(data) {
-                    $("#title").text(data.title);
-                    $("#rating").text(data.rating);
-                    $("#times_played").text(data.times_played);
-                    $("#last_played").text(data.last_played);
+                console.log("Updated play count");
+                    // $("#title").text(data.title);
+                    // $("#rating").text(data.rating);
+                    // $("#times_played").text(data.times_played);
+                    // $("#last_played").text(data.last_played);
                 });
             $("#audio").attr("src", playlist[track_num].path);
-            var display_name = playlist[track_num].title.replace("&#39;","'").replace("&amp;", "&");
+            // var display_name = playlist[track_num].title.replace("&#39;","'").replace("&amp;", "&");
+            var display_name = unescape(playlist[track_num].title);
             $("#playing").text(display_name);
-
             try {
                 $("#audio").trigger("play");
             } catch(err) {
