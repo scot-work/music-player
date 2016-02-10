@@ -42,22 +42,18 @@
     function make_playlist(){
         {% for track in tracks %}
             track{{ track.id }} = new Object();
-            track{{ track.id }}.title = "{{ track.title }}";
+            track{{ track.id }}.title = "{{ track.title|safe }}";
             track{{ track.id }}.id = "{{ track.id }}";
             track{{ track.id }}.track_number = "{{ track.track_number }}";
             track{{ track.id }}.rating = "{{ track.rating }}";
-            console.log("Last played: {{ track.last_played }}");
             track{{ track.id }}.last_played = "{{ track.last_played }}";
             track{{ track.id }}.times_played = "{{ track.times_played }}";
-            //var temp_path = "{{ track.path }}".replace("&#39;","'");
-            var temp_path = unescape("{{ track.path }}");
-            // temp_path = temp_path.replace("&amp;", "&");
-            track{{ track.id }}.path = temp_path;
+            // var temp_path = unescape("{{ track.path }}");
+            track{{ track.id }}.path = "{{ track.path|safe }}";
             playlist.push(track{{ track.id }});
             var item = document.createElement("li");
             item.id = "track_" + track{{ track.id }}.id;
-            // var textnode = document.createTextNode("{{ track.title }}".replace("&#39;","'").replace("&amp;", "&"));
-            var textnode = document.createTextNode(unescape("{{ track.title }}"));
+            var textnode = document.createTextNode(track{{ track.id }}.title);
             item.appendChild(textnode);
             $("#track_list").append(item);
 
@@ -65,7 +61,6 @@
             $('#track_{{ track.id }}').click (
                 function()
                 {
-                    //edit_track(track{{track.id}})
                     edit_track(track{{ track.id }})
                 });
         {% endfor %}
@@ -81,14 +76,11 @@
         $('#times_played').text(track.times_played);
         $('#track_id').val(track.id);
         $("#last_played").text(track.last_played);
-                    // $("#times_played").text(data.times_played);
-                    // $("#last_played").text(data.last_played);
 
-        console.log("Editing track #" + track.id);
         // Send AJAX request
         $.getJSON('/_ajax_edit_track', { "track_id": track.id },
             function(data) {
-            console.log("processing AJAX edit reply data");
+                // Get current track statistics
             var track_title = data['title'];
             var times_played = data['times_played'];
             var last_played = data['last_played'];
@@ -108,7 +100,7 @@
                         .attr("value",i).text(current_tag));
                 }
             }
-        }).success(function() { console.log("second success"); })
+        }).success(function() { console.log("AJAX success"); })
             .error(function() { alert("AJAX error"); })
             .complete(function() { console.log("AJAX complete"); });
     }
@@ -117,26 +109,19 @@
     function next_track() {
         if (track_num < playlist.length) {
             // Update last played and times played
-            $.getJSON('/_ajax_track_played', { "track_id":playlist[track_num].id }, function(data) {
-                console.log("Updated play count");
-                    // $("#title").text(data.title);
-                    // $("#rating").text(data.rating);
-                    // $("#times_played").text(data.times_played);
-                    // $("#last_played").text(data.last_played);
+            $.getJSON('/_ajax_track_played', { "track_id": playlist[track_num].id }, function(data) {
                 });
             $("#audio").attr("src", playlist[track_num].path);
-            // var display_name = playlist[track_num].title.replace("&#39;","'").replace("&amp;", "&");
-            var display_name = unescape(playlist[track_num].title);
+            var display_name = playlist[track_num].title;
             $("#playing").text(display_name);
             try {
                 $("#audio").trigger("play");
             } catch(err) {
-                console.log("error playing track: " + err)
+                console.log("error playing track: " + playlist[track_num].path + " " + err);
             }
             track_num = track_num + 1;
         }
     }
-
     </script>
 {% endblock %}
 </head>
@@ -144,15 +129,15 @@
     {% block left %}
     <h1>{{ album_title }}</h1>
     <h2>{{ album_performer }} {{ album_year}}</h2>
-    <h3 id = "playing" style="font-weight:bold;"></h3>&nbsp;
+    <h3 id = "playing" style = "font-weight:bold;"></h3>&nbsp;
     <a href="javascript:next_track();"><button type="button">Skip</button></a>
-    <audio controls id="audio" onended="next_track()" ></audio>
+    <audio controls id = "audio" onended = "next_track()" ></audio>
     <h3>Tracks</h3>
     <ul id = "track_list"></ul>
     {% endblock %}
 
     {% block right %}
-    <div id = "track_details" style = "display: none; margin-left:1em">
+    <div id = "track_details" style = "display: none; margin-left: 1em">
         <h3>Edit Track</h3>
         <button type = "button" id = "submit_change">Submit</button>&nbsp;
         <button type = "button" id = "cancel_change">Cancel</button>
@@ -161,9 +146,9 @@
         <label for="track_title">Title:&nbsp;</label>
             <input type = "text" name = "track_title" id = "track_title" size = 30 />
         <label for="track_number">Track #:&nbsp;</label>
-            <input type = "text" name = "track_number" id = "track_number" size = 3/>
+            <input type = "text" name = "track_number" id = "track_number" size = 3 />
         <div style = "float:left; margin-top:1em;"><label for="track_rating">Rating:</label><br />
-        <select name = "track_rating" id = "track_rating" size = 4>
+        <select name = "track_rating" id = "track_rating" size = 4 >
             <option value = "1">* Sucks</option>
             <option value = "2">** OK</option>
             <option value = "3">*** Good</option>
@@ -177,7 +162,6 @@
         <div style = "float:right; margin-top:1em;"><label for="tag_select">Tags:</label><br />
             <select multiple name = "tag_select" id = "tag_select" size = 10></select>
         </div>
-
     </div>
     {% endblock %}
 </body>

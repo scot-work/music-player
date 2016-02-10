@@ -241,10 +241,20 @@ def albumDetails(album_id):
 
 @app.route('/album/<int:album_id>/play/')
 def playAlbum(album_id):
+    # Get album based on ID
     album = session.query(Album).filter_by(id = album_id).one()
+    # Get performer from DB
     performer = session.query(Performer).filter_by(id = album.performer).one()
+    # Get album tracks in order
     album_tracks = session.query(Track).filter_by(album
         = album_id).order_by(Track.track_number)
+
+    ''' DEBUGGING TRACK TITLES '''
+    for track in album_tracks:
+        print "Track title: %s" % track.title
+        print "Track path: %s" % track.path
+
+    ''' DEBUGGING TRACK TITLES '''
 
     return render_template('playAlbum.html',
         tracks = album_tracks,
