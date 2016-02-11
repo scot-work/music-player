@@ -127,8 +127,41 @@ def editPerformer(performer_id):
         return render_template(
             'editPerformer.html', performer = editedPerformer)
 
+@app.route('/performer/<int:performer_id>/tag/', methods = ['GET', 'POST'])
+def tagAllPerformerTracks(performer_id):
+    performer_to_tag = session.query(Performer).filter_by(
+                id = performer_id).one()
+    if request.method == 'POST':
+        if request.form['tags']:
+            # Get performer from database
+
+            # Get list of albums
+            albums = performer_to_tag.albums
+            # Get selected tags
+            tags_to_add = request.form.getlist('tags')
+            for tag in tags_to_add:
+                for album in albums:
+                    tracks = album.tracks
+                    for track in tracks:
+                        # Check for existing tags
+                        tag_count = session.query(Tag_Track).filter(
+                            and_(Tag_Track.tag == tag,
+                            Tag_Track.track == track.id)).count()
+                        if tag_count == 0:
+                            tag_track = Tag_Track(tag = tag, track = track.id)
+                            session.add(tag_track)
+            session.commit()
+        return redirect(
+            url_for('listPerformers'))
+    # Process GET
+    else:
+        # Get list of all tags
+        tags = session.query(Tag).order_by(Tag.name).all()
+        return render_template(
+            'tagPerformer.html', performer = performer_to_tag, tags = tags)
+
 # Delete a performer
-@app.route('/performer/<int:performer_id>/delete/', methods=['GET', 'POST'])
+@app.route('/performer/<int:performer_id>/delete/', methods = ['GET', 'POST'])
 def deletePerformer(performer_id):
     performerToDelete = session.query(
         Performer).filter_by(id = performer_id).one()
