@@ -3,18 +3,24 @@
 <html>
 <head>
     {% block head %}
-    <title>Tag List</title>
+    <title>Organize Tags</title>
     {% endblock %}
 </head>
 <body>
+    {% block navigation %}
+    <ul class="subnav">
+        <li><a href = "{{ url_for('listPerformers') }}">Performers</a></li>
+        <li><a href = "{{ url_for('listAlbums')}}">Albums</a></li>
+        <li>Tags</li>
+        <li><a href = "{{ url_for('listTracks') }}">Tracks</a></li>
+    </ul>
+    {% endblock %}
     {% block left %}
-    <h1>Tag list</h1>
+    <h1>Tags</h1>
     <p><a href="{{ url_for('newTag') }}"><button type="button">New</button></a></p>
     <ul>
         {% for tag in tags %}
-        <li>
-            <a href="{{ url_for('listTagTracks', tag_id = tag.id) }}">{{ tag.name }}</a>
-        </li>
+        <li>{{ tag.name }}</li>
         {% endfor %}
     </ul>
     {% endblock %}

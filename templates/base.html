@@ -12,14 +12,15 @@
 
 <div class = "top-navigation">
     <ul >
-        <li><a href = "{{ url_for('home') }}">Home</a></li>
-        <li><a href = "{{ url_for('listPerformers') }}">Performers</a></li>
+        <!-- <li><a href = "{{ url_for('home') }}">Home</a></li> -->
+        <!-- <li><a href = "{{ url_for('listPerformers') }}">Performers</a></li> -->
         <!-- <li><a href = "{{ url_for('listAlbums')}}">Albums</a></li> -->
-        <li><a href = "{{ url_for('playRandomAlbum')}}">Random Album</a></li>
-        <li><a href = "{{ url_for('listLibrary')}}">Library</a></li>
-        <li><a href = "{{ url_for('browseFiles', path = '/Users/scotclose/Development/repositories/music-player/static') }}">Browse</a></li>
-        <li><a href = "{{ url_for('listTags') }}">Tags</a></li>
-        <li><a href = "{{ url_for('listTracks') }}">Tracks</a></li>
+        <!-- <li><a href = "{{ url_for('playRandomAlbum')}}">Random Album</a></li> -->
+        <!-- <li><a href = "{{ url_for('playRandomAlbum')}}">Random</a></li> -->
+        <li><a href = "{{ url_for('listLibrary')}}">Listen</a></li>
+        <li><a href = "{{ url_for('browseFiles', path = '/Users/scotclose/Development/repositories/music-player/static') }}">Find</a></li>
+        <li><a href = "{{ url_for('listTags') }}">Organize</a></li>
+        <!-- <li><a href = "{{ url_for('listTracks') }}">Tracks</a></li> -->
     </ul>
     {% block navigation %}
     {% endblock %}

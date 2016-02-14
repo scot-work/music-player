@@ -7,6 +7,12 @@
     {% endblock %}
 </head>
 <body>
+    {% block navigation %}
+        <li><a href = "{{ url_for('listPerformers') }}">Performers</a></li>
+        <li><a href = "{{ url_for('listAlbums')}}">Albums</a></li>
+        <li><a href = "{{ url_for('listTags') }}">Tags</a></li>
+        <li><a href = "{{ url_for('listTracks') }}">Tracks</a></li>
+    {% endblock %}
     {% block left %}
     <h1>Album list</h1>
     <a href = "{{ url_for('playRandomAlbum')}}"><button type = "button">Random</button></a>

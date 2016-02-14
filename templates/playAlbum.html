@@ -42,7 +42,8 @@
     function make_playlist(){
         {% for track in tracks %}
             track{{ track.id }} = new Object();
-            track{{ track.id }}.title = "{{ track.title|safe }}";
+            track{{ track.id }}.title = "{{ track.title }}";
+            // track{{ track.id }}.title = "{{ track.title|safe }}";
             track{{ track.id }}.id = "{{ track.id }}";
             track{{ track.id }}.track_number = "{{ track.track_number }}";
             track{{ track.id }}.rating = "{{ track.rating }}";
@@ -120,12 +121,24 @@
                 console.log("error playing track: " + playlist[track_num].path + " " + err);
             }
             track_num = track_num + 1;
+        } else {
+            {% if random %}
+                self.location="{{ url_for('playRandomAlbum') }}";
+            {% endif %}
+            // alert("Album is over");
         }
     }
     </script>
 {% endblock %}
 </head>
-<body >
+<body>
+    {% block navigation %}
+    <ul class="subnav">
+        <li><a href = "{{ url_for('listLibrary')}}">Library</a></li>
+        <li><a href = "{{ url_for('playRandomAlbum')}}">Random Album</a></li>
+        <li><a href = "{{ url_for('playTags') }}">Tag</a></li>
+    </ul>
+    {% endblock %}
     {% block left %}
     {% if album_title %}
     <h1>{{ album_title }}</h1>

@@ -114,7 +114,8 @@ def newPerformer():
 # Edit a performer
 @app.route('/performer/<int:performer_id>/edit/', methods=['GET', 'POST'])
 def editPerformer(performer_id):
-    editedPerformer = session.query(Performer).filter_by(id=performer_id).one()
+    editedPerformer = session.query(Performer).filter_by(
+        id = performer_id).one()
     if request.method == 'POST':
         if request.form['name']:
             editedPerformer.name = request.form['name']
@@ -225,7 +226,11 @@ def editAlbum(album_id):
     albumToEdit = session.query(
         Album).filter_by(id = album_id).one()
     if request.method == 'POST':
-        # Make changes here
+        if request.form['title']:
+            albumToEdit.title = request.form['title']
+        # year
+        if request.form['year']:
+            albumToEdit.year = request.form['year']
         session.commit()
         return redirect(
             url_for('listAlbums', album_id = album_id))
@@ -277,7 +282,9 @@ def albumDetails(album_id):
 def playRandomAlbum():
     album_count = session.query(Album).count()
     random_index = randrange(0, album_count)
-    return redirect(url_for('playAlbum', album_id = random_index))
+    return redirect(url_for('playAlbum',
+        album_id = random_index,
+        random = True))
 
 @app.route('/album/<int:album_id>/play/')
 def playAlbum(album_id):
@@ -296,9 +303,15 @@ def playAlbum(album_id):
         album_performer = performer.name)
 
 @app.route('/tag/')
+@app.route('/tag/list/')
 def listTags():
     tags = session.query(Tag).order_by(Tag.name).all()
     return render_template('listTags.html', tags = tags)
+
+@app.route('/tag/play/')
+def playTags():
+    tags = session.query(Tag).order_by(Tag.name).all()
+    return render_template('playTags.html', tags = tags)
 
 @app.route('/tag/new/', methods=['GET', 'POST'])
 def newTag():
@@ -310,15 +323,13 @@ def newTag():
     else:
         return render_template('newTag.html')
 
-@app.route('/tag/<int:tag_id>')
-def listTagTracks(tag_id):
+@app.route('/tag/<int:tag_id>/play/')
+def playTagTracks(tag_id):
     tag_tracks = session.query(Tag_Track).filter_by(tag = tag_id).all()
     track_list = []
     for tag_track in tag_tracks:
-        print "tag_track: %s" % tag_track.track
         track = session.query(Track).filter_by(id = tag_track.track).one()
         track_list.append(track)
-    # return render_template('listTagTracks.html', tracks = track_list)
     return render_template('playAlbum.html', tracks = shuffle(track_list))
 
 # Scan for tracks

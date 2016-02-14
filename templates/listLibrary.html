@@ -8,6 +8,11 @@
 </head>
 <body>
     {% block navigation %}
+    <ul class="subnav">
+        <li>Library</li>
+        <li><a href = "{{ url_for('playRandomAlbum')}}">Random Album</a></li>
+        <li><a href = "{{ url_for('playTags') }}">Tag</a></li>
+    </ul>
     <a href="#A">A</a>
     <a href="#B">B</a>
     <a href="#C">C</a>
@@ -38,7 +43,6 @@
 
     {% block left %}
     <h1>Library</h1>
-    <a href = "{{ url_for('playRandomAlbum')}}"><button type = "button">Play a Random Album</button></a>
     {% set section = "" %}
     {% for performer in performers %}
         {% set first_char = performer.sort_name[:1 ] %}
