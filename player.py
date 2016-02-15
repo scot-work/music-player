@@ -323,6 +323,17 @@ def newTag():
     else:
         return render_template('newTag.html')
 
+@app.route('/tag/<int:tag_id>/list/')
+def listTagTracks(tag_id):
+    tag_tracks = session.query(Tag_Track).filter_by(tag = tag_id).all()
+    tag = session.query(Tag).filter_by(id = tag_id).one()
+    track_list = []
+    for tag_track in tag_tracks:
+        track = session.query(Track).filter_by(id = tag_track.track).one()
+        track_list.append(track)
+    return render_template('listTagTracks.html',
+        tracks = track_list, tag = tag)
+
 @app.route('/tag/<int:tag_id>/play/')
 def playTagTracks(tag_id):
     tag_tracks = session.query(Tag_Track).filter_by(tag = tag_id).all()
@@ -331,6 +342,14 @@ def playTagTracks(tag_id):
         track = session.query(Track).filter_by(id = tag_track.track).one()
         track_list.append(track)
     return render_template('playAlbum.html', tracks = shuffle(track_list))
+
+@app.route('/tag/<int:tag_id>/track/<int:track_id>/remove/')
+def removeTagFromTrack(tag_id, track_id):
+    tagged_track = session.query(Tag_Track).filter(and_(
+        Tag_Track.tag == tag_id, Tag_Track.track == track_id)).one()
+    session.delete(tagged_track)
+    session.commit()
+    return redirect(url_for('listTagTracks', tag_id = tag_id))
 
 # Scan for tracks
 @app.route('/scan/')
@@ -583,6 +602,6 @@ def shuffle(tracks):
 app.jinja_env.filters['isNotEmptyString'] = isNotEmptyString
 
 if __name__ == '__main__':
-    # app.debug = True
+    app.debug = True
     app.run(host = '0.0.0.0', port = 5000)
 

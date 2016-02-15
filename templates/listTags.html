@@ -10,7 +10,7 @@
     {% block navigation %}
     <ul class="subnav">
         <li><a href = "{{ url_for('listPerformers') }}">Performers</a></li>
-        <li><a href = "{{ url_for('listAlbums')}}">Albums</a></li>
+        <li><a href = "{{ url_for('listAlbums') }}">Albums</a></li>
         <li>Tags</li>
         <li><a href = "{{ url_for('listTracks') }}">Tracks</a></li>
     </ul>
@@ -20,7 +20,7 @@
     <p><a href="{{ url_for('newTag') }}"><button type="button">New</button></a></p>
     <ul>
         {% for tag in tags %}
-        <li>{{ tag.name }}</li>
+        <li><a href="{{ url_for('listTagTracks', tag_id = tag.id) }}">{{ tag.name }}</a></li>
         {% endfor %}
     </ul>
     {% endblock %}

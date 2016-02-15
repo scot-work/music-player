@@ -7,12 +7,22 @@
     {% endblock %}
 </head>
 <body>
+    {% block navigation %}
+    <ul class="subnav">
+        <li><a href = "{{ url_for('listPerformers') }}">Performers</a></li>
+        <li><a href = "{{ url_for('listAlbums') }}">Albums</a></li>
+        <li>Tags</li>
+        <li><a href = "{{ url_for('listTracks') }}">Tracks</a></li>
+    </ul>
+    {% endblock %}
     {% block left %}
-    <h1>Tracks</h1>
+    <h1>{{ tag.name }} Tracks</h1>
     <ul>
         {% for track in tracks %}
         <li>
-            {{ track.title }}
+            {{ track.title }}&nbsp;
+            <a href="{{ url_for('removeTagFromTrack', tag_id = tag.id, track_id = track.id) }}"><button type="button">Remove tag</button>
+            </a>
         </li>
         {% endfor %}
     </ul>
