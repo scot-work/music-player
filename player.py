@@ -4,7 +4,7 @@ from sqlalchemy.orm import sessionmaker
 from database_setup import Base, Track, Performer, Album, Tag, Tag_Track
 from mutagen.mp3 import MP3
 from mutagen.easyid3 import EasyID3
-import os, random, json, string, datetime
+import os, random, json, string, datetime, operator
 from random import randrange
 
 app = Flask(__name__)
@@ -375,8 +375,14 @@ def updateTrack():
     json_response['rating'] = track.rating
     json_response['times_played'] = track.times_played
     json_response['last_played'] = str(track.last_played)
-    json_response['all_tags'] = all_tags
+    # json_response['all_tags'] = all_tags
+    json_response['all_tags'] = sorted(all_tags.items(),
+        key = operator.itemgetter(1))
+
+    print json_response['all_tags']
     json_response['selected_tags'] = selected_tags
+    print "Returning track data for editing:"
+    # print (json_response)
     return jsonify(json_response)
 
 # Save changes to the database
@@ -412,18 +418,19 @@ def saveTrack():
                 Tag_Track.tag == tag)).count()
             # print "Found %s rows for tag %s " % (tag_query, tag)
             if tag_query == 0:
-                print "New tag"
+                # print "New tag"
                 tag_track = Tag_Track(tag = tag, track = track_id)
                 session.add(tag_track)
         session.commit()
 
-    new_times_played = request.args.get('times_played')
+    # new_times_played = request.args.get('times_played')
     print "Saving changes to track # %s name %s rating %s" % (track_id, new_title, new_rating)
     if (changed):
         # session.add(track)
         session.commit()
     return jsonify(response = "Track saved")
 
+# Update track played history
 @app.route('/_ajax_track_played/')
 def trackPlayed():
     track_id = request.args.get('track_id')

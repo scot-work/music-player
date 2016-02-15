@@ -15,6 +15,7 @@
 
         $('#submit_change').click (
             function() {
+                $("#loading").text("Saving track...");
                 var tags = new Array();
                 $("#tag_select").each(function(){
                     tags.push($(this).val());
@@ -43,13 +44,9 @@
         {% for track in tracks %}
             track{{ track.id }} = new Object();
             track{{ track.id }}.title = "{{ track.title }}";
-            // track{{ track.id }}.title = "{{ track.title|safe }}";
             track{{ track.id }}.id = "{{ track.id }}";
             track{{ track.id }}.track_number = "{{ track.track_number }}";
             track{{ track.id }}.rating = "{{ track.rating }}";
-            track{{ track.id }}.last_played = "{{ track.last_played }}";
-            track{{ track.id }}.times_played = "{{ track.times_played }}";
-            // var temp_path = unescape("{{ track.path }}");
             track{{ track.id }}.path = "{{ track.path|safe }}";
             playlist.push(track{{ track.id }});
             var item = document.createElement("li");
@@ -69,37 +66,41 @@
 
     function edit_track(track){
         console.log("Editing track " + track.title)
+        $("#loading").text("Editing track...");
         // Populate track edit fields
         $('#track_path').text(track.path);
         $('#tag_select').find('option').remove();
         $('#track_details').show();
         $('#track_title').val(track.title);
         $('#track_number').val(track.track_number);
-        $('#times_played').text(track.times_played);
+        // $('#times_played').text(track.times_played);
         $('#track_id').val(track.id);
-        $("#last_played").text(track.last_played);
+        // $("#last_played").text(track.last_played);
 
         // Send AJAX request
         $.getJSON('/_ajax_edit_track', { "track_id": track.id },
             function(data) {
                 // Get current track statistics
             var track_title = data['title'];
-            var times_played = data['times_played'];
-            var last_played = data['last_played'];
+            // var times_played = data['times_played'];
+            // var last_played = data['last_played'];
             var track_number = data['track_number'];
             var rating = data['rating'];
             var selected_tags = JSON.stringify(data['selected_tags']);
+            var all_tags = data['all_tags']
             $("#track_rating").val(data.rating);
-
             // Populate select with available tags
-            for (var i = 1; i <= Object.keys(data["all_tags"]).length; i++) {
+            for (var i = 0; i < all_tags.length; i++) {
                 var current_tag = data["all_tags"][i];
-                if (selected_tags.indexOf(current_tag) > 0) {
+                console.log ("current tag is ");
+                console.log (current_tag[0]);
+                console.log(current_tag[1])
+                if (selected_tags.indexOf(current_tag[0]) > 0) {
                     $('#tag_select').append($("<option selected></option>")
-                        .attr("value",i).text(current_tag));
+                        .attr("value", current_tag[0]).text(current_tag[1]));
                 } else {
                     $('#tag_select').append($("<option></option>")
-                        .attr("value",i).text(current_tag));
+                        .attr("value", current_tag[0]).text(current_tag[1]));
                 }
             }
         }).success().error(function() { alert("AJAX error"); }).complete();
@@ -109,8 +110,10 @@
     function next_track() {
         if (track_num < playlist.length) {
             // Update last played and times played
+            console.log("Updating track played history");
+            $("#loading").text("Updating track history...");
             $.getJSON('/_ajax_track_played', { "track_id": playlist[track_num].id }, function(data) {
-                console.log(data);
+                console.log("History updated");
                 });
             $("#audio").attr("src", playlist[track_num].path);
             var display_name = playlist[track_num].title;
@@ -128,6 +131,16 @@
             // alert("Album is over");
         }
     }
+
+    function compare(a, b) {
+        if (a.last_nom < b.last_nom)
+            return -1;
+        else if (a.last_nom > b.last_nom)
+            return 1;
+        else
+            return 0;
+    }
+
     </script>
 {% endblock %}
 </head>
@@ -169,10 +182,6 @@
             <option value = "3">*** Good</option>
             <option value = "4">**** Great</option>
         </select>
-        <br /><br /><label for = "times_played">Times Played:</label>
-        <span id = "times_played"></span>
-        <br /><br /><label for = "last_played">Last Played:</label>
-        <span id = "last_played"></span>
         </div>
         <div style = "float:right; margin-top:1em;"><label for="tag_select">Tags:</label><br />
             <select multiple name = "tag_select" id = "tag_select" size = 10></select>

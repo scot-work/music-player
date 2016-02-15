@@ -3,24 +3,28 @@
 <head>
     <meta charset="utf-8" />
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename = 'styles.css') }}" />
-    <script type = text/javascript src="{{ url_for('static', filename='jquery-2.2.0.min.js') }}"></script>
+    <script type = text/javascript src="{{ url_for('static', filename='jquery-2.2.0.min.js') }}">
+    </script>
+    <script>
+        $( document ).ajaxStart(function() {
+            $("#loading").show();
+            console.log("AJAX start");
+        });
+        $( document ).ajaxStop(function() {
+            $("#loading").hide();
+            console.log("AJAX stop");
+        });
+    </script>
     {% block head %}
     {% endblock %}
 </head>
 
 <body {% block onload %} {% endblock %}>
-
 <div class = "top-navigation">
     <ul >
-        <!-- <li><a href = "{{ url_for('home') }}">Home</a></li> -->
-        <!-- <li><a href = "{{ url_for('listPerformers') }}">Performers</a></li> -->
-        <!-- <li><a href = "{{ url_for('listAlbums')}}">Albums</a></li> -->
-        <!-- <li><a href = "{{ url_for('playRandomAlbum')}}">Random Album</a></li> -->
-        <!-- <li><a href = "{{ url_for('playRandomAlbum')}}">Random</a></li> -->
         <li><a href = "{{ url_for('listLibrary')}}">Listen</a></li>
         <li><a href = "{{ url_for('browseFiles', path = '/Users/scotclose/Development/repositories/music-player/static') }}">Find</a></li>
         <li><a href = "{{ url_for('listTags') }}">Organize</a></li>
-        <!-- <li><a href = "{{ url_for('listTracks') }}">Tracks</a></li> -->
     </ul>
     {% block navigation %}
     {% endblock %}
@@ -32,6 +36,7 @@
         {% endblock %}
     </div>
     <div class="right">
+        <div style="display:none" id="loading">Loading...</div>
         {% block right %}
         {% endblock %}
     </div>
