@@ -1,15 +1,15 @@
 {% extends "base.html" %}
-<!doctype html>
-<html>
-<head>
-    {% block head %}
-    <title>Library</title>
+{% block head %}
+    <title>Tracks with Tag</title>
+    <script>
+        $(function() {
+            $("#nav-listen").addClass("selected");
+        });
+    </script>
     {% endblock %}
-</head>
-<body>
     {% block navigation %}
     <ul class="subnav">
-        <li>Library</li>
+        <li><a href="{{ url_for('listLibrary') }}" class = "selected">Library</a></li>
         <li><a href = "{{ url_for('playRandomAlbum')}}">Random Album</a></li>
         <li><a href = "{{ url_for('playTags') }}">Tag</a></li>
     </ul>
@@ -39,9 +39,9 @@
     <a href="#X">X</a>
     <a href="#Y">Y</a>
     <a href="#Z">Z</a>
-    {% endblock %}
+{% endblock %}
 
-    {% block left %}
+{% block left %}
     <h1>Library</h1>
     {% set section = "" %}
     {% for performer in performers %}
@@ -63,7 +63,5 @@
                 {% endfor %}
             </ul>
         </div>
-        {% endfor %}
-    {% endblock %}
-</body>
-</html>
+    {% endfor %}
+{% endblock %}
