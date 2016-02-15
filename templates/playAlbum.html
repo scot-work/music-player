@@ -97,10 +97,10 @@
             console.log("selected tags:");
             console.log(selected_tags);
             for (var i = 0; i < all_tags.length; i++) {
-                console.log("i = " + i);
+
                 var current_tag = data["all_tags"][i];
-                console.log("Current tag is " + current_tag[1])
-                if (selected_tags.indexOf(current_tag[0]) > 0) {
+
+                if (selected_tags.indexOf(current_tag[1]) > 0) {
                     $('#tag_select').append($("<option selected></option>")
                         .attr("value", current_tag[0]).text(current_tag[1]));
                 } else {
