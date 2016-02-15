@@ -51,7 +51,7 @@
             playlist.push(track{{ track.id }});
             var item = document.createElement("li");
             item.id = "track_" + track{{ track.id }}.id;
-            var textnode = document.createTextNode(track{{ track.id }}.title);
+            var textnode = document.createTextNode("{{ track.title|safe }}");
             item.appendChild(textnode);
             $("#track_list").append(item);
 
@@ -65,8 +65,7 @@
     }
 
     function edit_track(track){
-        console.log("Editing track " + track.title)
-        $("#loading").text("Editing track...");
+        $("#loading").text("Getting track data...");
         // Populate track edit fields
         $('#track_path').text(track.path);
         $('#tag_select').find('option').remove();
@@ -87,14 +86,15 @@
             var track_number = data['track_number'];
             var rating = data['rating'];
             var selected_tags = JSON.stringify(data['selected_tags']);
-            var all_tags = data['all_tags']
+            var all_tags = data['all_tags'];
             $("#track_rating").val(data.rating);
+
+            $('#mySelect').attr('size', all_tags.length);
             // Populate select with available tags
+            console.log("selected tags:");
+            console.log(selected_tags);
             for (var i = 0; i < all_tags.length; i++) {
                 var current_tag = data["all_tags"][i];
-                console.log ("current tag is ");
-                console.log (current_tag[0]);
-                console.log(current_tag[1])
                 if (selected_tags.indexOf(current_tag[0]) > 0) {
                     $('#tag_select').append($("<option selected></option>")
                         .attr("value", current_tag[0]).text(current_tag[1]));
@@ -154,7 +154,7 @@
     {% endblock %}
     {% block left %}
     {% if album_title %}
-    <h1>{{ album_title }}</h1>
+    <h1>{{ album_title|safe }}</h1>
     <h2>{{ album_performer }} ({{ album_year}})</h2>
     {% endif %}
     <h3 id = "playing" style = "font-weight:bold;"></h3>&nbsp;
@@ -184,7 +184,7 @@
         </select>
         </div>
         <div style = "float:right; margin-top:1em;"><label for="tag_select">Tags:</label><br />
-            <select multiple name = "tag_select" id = "tag_select" size = 10></select>
+            <select multiple name = "tag_select" id = "tag_select" ></select>
         </div>
     </div>
     {% endblock %}
