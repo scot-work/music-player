@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+
 {% block head %}
     <title>Performers</title>
     <script>
@@ -7,6 +8,7 @@
         });
     </script>
 {% endblock %}
+
 {% block navigation %}
     <ul class="subnav">
         <li><a href = "{{ url_for('listPerformers') }}" class = "selected">Performers</a></li>

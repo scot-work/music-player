@@ -300,7 +300,8 @@ def playAlbum(album_id):
         tracks = album_tracks,
         album_title = album.title,
         album_year = album.year,
-        album_performer = performer.name)
+        album_performer = performer.name,
+        random = random)
 
 @app.route('/tag/')
 @app.route('/tag/list/')
@@ -398,7 +399,7 @@ def updateTrack():
     json_response['all_tags'] = sorted(all_tags.items(),
         key = operator.itemgetter(1))
 
-    print json_response['all_tags']
+    # print json_response['all_tags']
     json_response['selected_tags'] = selected_tags
     print "Returning track data for editing:"
     # print (json_response)

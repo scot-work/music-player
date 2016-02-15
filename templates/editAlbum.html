@@ -1,25 +1,30 @@
 {% extends "base.html" %}
-<!doctype html>
-<html>
-<head>
-    {% block head %}
-    <title>Edit {{ album.title }}</title>
-    {% endblock %}
-</head>
-<body>
-    {% block left %}
+
+{% block head %}
+    <title>Edit Album</title>
+    <script>
+        $(function() {
+            $("#nav-organize").addClass("selected");
+        });
+    </script>
+{% endblock %}
+
+{% block navigation %}
+    <ul class="subnav">
+        <li><a href = "{{ url_for('listPerformers') }}">Performers</a></li>
+        <li><a href = "{{ url_for('listAlbums') }}" class = "selected">Albums</a></li>
+        <li><a href = "{{ url_for('listTags') }}">Tags</li>
+        <li><a href = "{{ url_for('listTracks') }}">Tracks</a></li>
+    </ul>
+{% endblock %}
+
+{% block left %}
     <h1>Edit Album</h1>
-    <!-- title = Column(String(250), nullable=False)
-    year = Column(Integer)
-    performer = Column(Integer, ForeignKey('performer.id'))
-    genre = Column(Integer, ForeignKey('genre.id'))
-    tracks = relationship('Track', backref="track") -->
+
     <form action="{{ url_for('editAlbum', album_id = album.id) }}" method="post">
         <p><label for="title">Title: </label><input type="text" name = "title" id = "title"  value = "{{ album.title }}"/></p>
         <p><label for="Year">Year: </label><input type="text" name = "year" id = "year"  value = "{{ album.year }}"/></p>
-        <p><label for="title">Genre: </label><input type="text" name="genre" id = "genre"  value = "{{ album.genre }}"/></p>
         <p><input type="submit" value="Submit" /></p>
     </form>
-    {% endblock %}
-</body>
-</html>
+{% endblock %}
+

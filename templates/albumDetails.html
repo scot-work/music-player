@@ -1,13 +1,23 @@
 {% extends "base.html" %}
-<!doctype html>
-<html>
-<head>
-    {% block head %}
+{% block head %}
     <title>Album Details</title>
-    {% endblock %}
-</head>
-<body>
-    {% block left %}
+    <script>
+        $(function() {
+            $("#nav-organize").addClass("selected");
+        });
+    </script>
+{% endblock %}
+
+{% block navigation %}
+    <ul class="subnav">
+        <li><a href = "{{ url_for('listPerformers') }}">Performers</a></li>
+        <li><a href = "{{ url_for('listAlbums') }}" class = "selected">Albums</a></li>
+        <li><a href = "{{ url_for('listTags') }}">Tags</li>
+        <li><a href = "{{ url_for('listTracks') }}">Tracks</a></li>
+    </ul>
+{% endblock %}
+
+{% block left %}
     <h2>{{ album.title }}</h2>
     <p>{{ album.year }}</p>
     <ol>
@@ -15,6 +25,4 @@
         <li>{{ track.track_number }} {{ track.title }} </li>
     {% endfor %}
     </ol>
-    {% endblock %}
-</body>
-</html>
+{% endblock %}
