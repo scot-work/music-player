@@ -44,6 +44,8 @@
 
     // Convert the JSON array into local URLs
     function make_playlist(){
+        // var stars = ["&nbsp;&nbsp;&nbsp;&nbsp;", "*&nbsp;&nbsp;&nbsp;", "**&nbsp;&nbsp;", "***&nbsp;", "****"];
+        // var stars = ["    ", "*   ", "**  ", "*** ", "****"];
         {% for track in tracks %}
             track{{ track.id }} = new Object();
             track{{ track.id }}.title = "{{ track.title }}";

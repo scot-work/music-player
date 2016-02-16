@@ -19,7 +19,6 @@ session = DBSession()
 @app.route('/')
 def home():
     return render_template('home.html')
-    pass
 
 # Play a playlist
 @app.route('/playlist/play/')
@@ -93,6 +92,7 @@ def deleteTrack(track_id):
 
 # List performers
 @app.route('/performer/')
+@app.route('/performers/')
 def listPerformers():
     performers = session.query(Performer).order_by(Performer.sort_name)
     return render_template('listPerformers.html',
@@ -204,6 +204,7 @@ def listLibrary():
 
 # Show albums
 @app.route('/album/')
+@app.route('/albums/')
 def listAlbums():
     albums = session.query(Album).order_by(Album.title).all()
     return render_template('listAlbums.html', albums = albums)
@@ -304,6 +305,7 @@ def playAlbum(album_id):
         random = random)
 
 @app.route('/tag/')
+@app.route('/tags/')
 @app.route('/tag/list/')
 def listTags():
     tags = session.query(Tag).order_by(Tag.name).all()
