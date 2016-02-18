@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, redirect, url_for, jsonify
 from sqlalchemy import create_engine, exists, and_
 from sqlalchemy.orm import sessionmaker
 from database_setup import Base, Track, Performer, Album, Tag, Tag_Track
+from mutagen import File
 from mutagen.mp3 import MP3
 from mutagen.easyid3 import EasyID3
 import os, random, json, string, datetime, operator
@@ -472,6 +473,15 @@ def recurse(path, artist_set, album_set):
             # TODO include other filetypes (mp4?. ogg?)
             # Get ID3 tags from track
             audio = MP3(path + '/' + str(file), ID3 = EasyID3)
+
+            try:
+                cover_src = File(path + '/' + str(file)).tags['APIC:'].data
+                cover_dest = path + '/' + 'cover.jpg'
+                with open(cover_dest, 'wb') as img:
+                    img.write(cover_src)
+            except:
+                pass
+                #print "No cover art found for %s" % path
 
             # date
             if not 'date' in audio:

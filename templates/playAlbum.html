@@ -117,18 +117,20 @@
     function next_track() {
         if (track_num < playlist.length) {
             // Update last played and times played
-            console.log("Updating track played history");
+            var path = playlist[track_num].path;
+            var img_path = "/" + path.substr(1, path.lastIndexOf('/')) + "cover.jpg";
+            $("#album_cover").attr("src", img_path);
             $("#loading").text("Updating track history...");
             $.getJSON('/_ajax_track_played', { "track_id": playlist[track_num].id }, function(data) {
                 console.log("History updated");
                 });
-            $("#audio").attr("src", playlist[track_num].path);
+            $("#audio").attr("src", path);
             var display_name = playlist[track_num].title;
             $("#playing").text(display_name);
             try {
                 $("#audio").trigger("play");
             } catch(err) {
-                console.log("error playing track: " + playlist[track_num].path + " " + err);
+                console.log("error playing track: " + path + " " + err);
             }
             track_num = track_num + 1;
         } else {
@@ -170,6 +172,7 @@
 {% endblock %}
 
 {% block right %}
+<img src = "" id = "album_cover" alt = "No album cover found" width="300px" />
     <div id = "track_details" style = "display: none; margin-left: 1em">
         <h3>Edit Track</h3>
         <button type = "button" id = "submit_change">Submit</button>&nbsp;
