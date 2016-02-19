@@ -1,5 +1,4 @@
 venv
-static
 add_tracks.py
 backup
 database_setup.pyc
