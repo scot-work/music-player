@@ -23,7 +23,9 @@
 <div class = "top-navigation">
     <ul >
         <li><a href = "{{ url_for('listLibrary')}}" id = "nav-listen">Listen</a></li>
-        <li><a href = "{{ url_for('browseFiles', path = '/Users/scotclose/Development/repositories/music-player/static') }}" id = "nav-find">Find</a></li>
+        <li>
+            <a href = "{{ url_for('browseFiles', path = '/Users/scotclose/Development/repositories/music-player/static') }}" id = "nav-find">Find</a>
+        </li>
         <li><a href = "{{ url_for('listTags') }}" id = "nav-organize">Organize</a></li>
     </ul>
     {% block navigation %}
