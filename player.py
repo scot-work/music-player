@@ -283,7 +283,11 @@ def albumDetails(album_id):
 @app.route('/album/random/')
 def playRandomAlbum():
     album_count = session.query(Album).count()
-    random_index = randrange(0, album_count)
+    found = 0
+    # make sure we send a valid album id
+    while found == 0:
+        random_index = randrange(0, album_count)
+        found = session.query(Album).filter_by(id = random_index).count()
     return redirect(url_for('playAlbum',
         album_id = random_index,
         random = True))
@@ -291,19 +295,23 @@ def playRandomAlbum():
 @app.route('/album/<int:album_id>/play/')
 def playAlbum(album_id):
     # Get album based on ID
-    album = session.query(Album).filter_by(id = album_id).one()
-    # Get performer from DB
-    performer = session.query(Performer).filter_by(id = album.performer).one()
-    # Get album tracks in order
-    album_tracks = session.query(Track).filter_by(album
-        = album_id).order_by(Track.track_number)
+    try:
+        album = session.query(Album).filter_by(id = album_id).one()
+        # Get performer from DB
+        performer = session.query(Performer).filter_by(id = album.performer).one()
+        # Get album tracks in order
+        album_tracks = session.query(Track).filter_by(album
+            = album_id).order_by(Track.track_number)
 
-    return render_template('playAlbum.html',
-        tracks = album_tracks,
-        album_title = album.title,
-        album_year = album.year,
-        album_performer = performer.name,
-        random = random)
+        return render_template('playAlbum.html',
+            tracks = album_tracks,
+            album_title = album.title,
+            album_year = album.year,
+            album_performer = performer.name,
+            random = random)
+    except:
+        print "Invalid album id: %s" % album_id
+        return redirect(url_for('playRandomAlbum'))
 
 @app.route('/tag/')
 @app.route('/tags/')
@@ -327,6 +335,7 @@ def newTag():
     else:
         return render_template('newTag.html')
 
+# Get a list of tracks with a given tag
 @app.route('/tag/<int:tag_id>/list/')
 def listTagTracks(tag_id):
     tag_tracks = session.query(Tag_Track).filter_by(tag = tag_id).all()
@@ -338,6 +347,7 @@ def listTagTracks(tag_id):
     return render_template('listTagTracks.html',
         tracks = track_list, tag = tag)
 
+# Play all the tracks with the given tag
 @app.route('/tag/<int:tag_id>/play/')
 def playTagTracks(tag_id):
     tag_tracks = session.query(Tag_Track).filter_by(tag = tag_id).all()
@@ -460,7 +470,7 @@ def trackPlayed():
     track = session.query(Track).filter_by(id = track_id).one()
     track.last_played = datetime.datetime.now()
     track.times_played = track.times_played + 1
-    print "updating track history for %s" % track.title
+    # print "updating track history for %s" % track.title
     session.commit()
     return jsonify(response = "Updated track history")
 
