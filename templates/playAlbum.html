@@ -56,7 +56,8 @@
             playlist.push(track{{ track.id }});
             var item = document.createElement("li");
             item.id = "track_" + track{{ track.id }}.id;
-            var textnode = document.createTextNode("{{ track.title|safe }}");
+            var html_title = "{{ track.title}}".replace("&#39;", "\u2019");
+            var textnode = document.createTextNode(html_title);
             item.appendChild(textnode);
             $("#track_list").append(item);
 
@@ -137,42 +138,35 @@
             {% if random %}
                 self.location="{{ url_for('playRandomAlbum') }}";
             {% endif %}
-            // alert("Album is over");
         }
     }
-
-    function compare(a, b) {
-        if (a.last_nom < b.last_nom)
-            return -1;
-        else if (a.last_nom > b.last_nom)
-            return 1;
-        else
-            return 0;
-    }
-
     </script>
 {% endblock %}
+
 {% block navigation %}
     <ul class="subnav">
         <li><a href = "{{ url_for('listLibrary')}}">Library</a></li>
         <li><a href = "{{ url_for('playRandomAlbum')}}" class = "selected">Random Album</a></li>
         <li><a href = "{{ url_for('playTags') }}">Tag</a></li>
+        <li><a href = "{{ url_for('playUnratedTracks') }}">Unrated</a></li>
     </ul>
 {% endblock %}
+
 {% block left %}
     {% if album_title %}
-    <h1>{{ album_title|safe }}</h1>
-    <h2>{{ album_performer }} ({{ album_year}})</h2>
+        <h1>{{ album_title|safe }}</h1>
+        <h2>{{ album_performer }} ({{ album_year}})</h2>
     {% endif %}
-    <h3 id = "playing" style = "font-weight:bold;"></h3>&nbsp;
-    <a href="javascript:next_track();"><button type="button">Skip</button></a>
-    <audio controls id = "audio" onended = "next_track()" ></audio>
-    <h3>Tracks</h3>
+    <h3 id = "playing"></h3>
+    <div style = "display: flex; align-items: center;">
+        <audio controls id = "audio" onended = "next_track()" ></audio>
+        <a href="javascript:next_track();"><button type="button">Next</button></a>
+    </div>
+
     <ul id = "track_list"></ul>
 {% endblock %}
 
 {% block right %}
-
     <div id = "track_details" style = "display: none; margin-left: 1em">
         <h3>Edit Track</h3>
         <button type = "button" id = "submit_change">Submit</button>&nbsp;

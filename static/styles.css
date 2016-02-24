@@ -18,13 +18,13 @@ li {
 }
 
 .left {
-    margin-top: 5em;
+    margin-top: 3em;
     width: 50%;
     float: left;
 }
 
 .right {
-    margin-top: 5em;
+    margin-top: 3em;
     /* background-color: #333; */
     width: 50%;
     float: right;

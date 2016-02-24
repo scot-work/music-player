@@ -91,6 +91,12 @@ def deleteTrack(track_id):
         return render_template(
             'deleteTrack.html', track = trackToDelete)
 
+# Play unrated tracks
+@app.route('/track/unrated/')
+def playUnratedTracks():
+    track_list = session.query(Track).filter_by(rating = 0).limit(15)
+    return render_template('playAlbum.html', tracks = track_list)
+
 # List performers
 @app.route('/performer/')
 @app.route('/performers/')
@@ -265,8 +271,7 @@ def tagAlbum(album_id):
                         tag_track = Tag_Track(tag = tag, track = track.id)
                         session.add(tag_track)
             session.commit()
-        return redirect(
-            url_for('listLibrary'))
+        return redirect(url_for('listAlbums'))
     # Process GET
     else:
         return render_template(
@@ -354,6 +359,12 @@ def playTagTracks(tag_id):
     track_list = []
     for tag_track in tag_tracks:
         track = session.query(Track).filter_by(id = tag_track.track).one()
+        # Check here for rating and last played
+        rating = track.rating
+        if track.last_played:
+            difference = datetime.datetime.now().date() - track.last_played
+            print (difference)
+        # print "last_played is %s now is %s" % (type(last_played), type(current_time))
         track_list.append(track)
     return render_template('playAlbum.html', tracks = shuffle(track_list))
 
