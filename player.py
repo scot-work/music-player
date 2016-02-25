@@ -6,6 +6,7 @@ from mutagen import File
 from mutagen.mp3 import MP3
 from mutagen.easyid3 import EasyID3
 import os, random, json, string, datetime, operator
+from datetime import timedelta
 from random import randrange
 
 app = Flask(__name__)
@@ -182,6 +183,14 @@ def deletePerformer(performer_id):
         return render_template(
             'deletePerformer.html', performer = performerToDelete)
 
+# Play all tracks by a performer
+@app.route('/performer/<int:performer_id>/play/')
+def playPerformer(performer_id):
+    performer = session.query(Performer).filter_by(id = performer_id).one()
+    tracks = session.query(Track).filter_by(performer = performer_id).all()
+    return render_template('playAlbum.html', tracks = shuffle(tracks),
+        album_title = performer.name)
+
 # Browse file system
 @app.route('/browse/')
 def browseFiles():
@@ -347,8 +356,11 @@ def listTagTracks(tag_id):
     tag = session.query(Tag).filter_by(id = tag_id).one()
     track_list = []
     for tag_track in tag_tracks:
-        track = session.query(Track).filter_by(id = tag_track.track).one()
-        track_list.append(track)
+        try:
+            track = session.query(Track).filter_by(id = tag_track.track).one()
+            track_list.append(track)
+        except:
+            print "Error: No track found for tag %s" % tag_track
     return render_template('listTagTracks.html',
         tracks = track_list, tag = tag)
 
@@ -356,17 +368,33 @@ def listTagTracks(tag_id):
 @app.route('/tag/<int:tag_id>/play/')
 def playTagTracks(tag_id):
     tag_tracks = session.query(Tag_Track).filter_by(tag = tag_id).all()
+    tag = session.query(Tag).filter_by(id = tag_id).one()
     track_list = []
     for tag_track in tag_tracks:
-        track = session.query(Track).filter_by(id = tag_track.track).one()
+        try:
+            track = session.query(Track).filter_by(id = tag_track.track).one()
+        except:
+            print "Error: Track not found %s" % tag_track.track
+            continue
         # Check here for rating and last played
-        rating = track.rating
+        # rating = track.rating
         if track.last_played:
             difference = datetime.datetime.now().date() - track.last_played
-            print (difference)
-        # print "last_played is %s now is %s" % (type(last_played), type(current_time))
-        track_list.append(track)
-    return render_template('playAlbum.html', tracks = shuffle(track_list))
+            recent_limit = timedelta(days = 14)
+            # TODO: Need to store this in the database, not hard-coded
+            if (difference > recent_limit):
+                # skip low-rated tracks
+                if (not (track.rating == 1 or track.rating == 2)):
+                    track_list.append(track)
+                '''else:
+                    print "Track %s not added due to rating %s" % (track.title, track.rating)
+            else:
+                print "Track %s played too recently, not adding" % track.title'''
+        else:
+            # Has never been played
+            track_list.append(track)
+    return render_template('playAlbum.html', tracks = shuffle(track_list),
+        album_title = tag.name)
 
 @app.route('/tag/<int:tag_id>/track/<int:track_id>/remove/')
 def removeTagFromTrack(tag_id, track_id):

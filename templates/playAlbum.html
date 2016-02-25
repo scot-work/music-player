@@ -44,8 +44,6 @@
 
     // Convert the JSON array into local URLs
     function make_playlist(){
-        // var stars = ["&nbsp;&nbsp;&nbsp;&nbsp;", "*&nbsp;&nbsp;&nbsp;", "**&nbsp;&nbsp;", "***&nbsp;", "****"];
-        // var stars = ["    ", "*   ", "**  ", "*** ", "****"];
         {% for track in tracks %}
             track{{ track.id }} = new Object();
             track{{ track.id }}.title = "{{ track.title }}";
@@ -56,7 +54,7 @@
             playlist.push(track{{ track.id }});
             var item = document.createElement("li");
             item.id = "track_" + track{{ track.id }}.id;
-            var html_title = "{{ track.title}}".replace("&#39;", "\u2019");
+            var html_title = "{{ track.title }}".replace("&#39;", "\u2019");
             var textnode = document.createTextNode(html_title);
             item.appendChild(textnode);
             $("#track_list").append(item);
@@ -126,7 +124,7 @@
                 console.log("History updated");
                 });
             $("#audio").attr("src", path);
-            var display_name = playlist[track_num].title;
+            var display_name = playlist[track_num].title.replace("&#39;", "\u2019");;
             $("#playing").text(display_name);
             try {
                 $("#audio").trigger("play");
@@ -146,7 +144,7 @@
 {% block navigation %}
     <ul class="subnav">
         <li><a href = "{{ url_for('listLibrary')}}">Library</a></li>
-        <li><a href = "{{ url_for('playRandomAlbum')}}" class = "selected">Random Album</a></li>
+        <li><a href = "{{ url_for('playRandomAlbum')}}">Random Album</a></li>
         <li><a href = "{{ url_for('playTags') }}">Tag</a></li>
         <li><a href = "{{ url_for('playUnratedTracks') }}">Unrated</a></li>
     </ul>
@@ -155,6 +153,8 @@
 {% block left %}
     {% if album_title %}
         <h1>{{ album_title|safe }}</h1>
+    {% endif %}
+    {% if album_performer %}
         <h2>{{ album_performer }} ({{ album_year}})</h2>
     {% endif %}
     <h3 id = "playing"></h3>
@@ -163,7 +163,7 @@
         <a href="javascript:next_track();"><button type="button">Next</button></a>
     </div>
 
-    <ul id = "track_list"></ul>
+    <ol id = "track_list"></ol>
 {% endblock %}
 
 {% block right %}
