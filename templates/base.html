@@ -21,7 +21,8 @@
 
 <body {% block onload %} {% endblock %}>
 <div class = "top-navigation">
-    <ul >
+    <ul>
+        <li><a href = "{{ url_for('home') }}">Home</a></li>
         <li><a href = "{{ url_for('listLibrary')}}" id = "nav-listen">Listen</a></li>
         <li><a href = "{{ url_for('listTags') }}" id = "nav-organize">Organize</a></li>
         <li>

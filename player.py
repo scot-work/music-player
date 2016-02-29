@@ -57,10 +57,8 @@ def editTrack(track_id):
     if request.method == 'POST':
         if request.form['title']:
             editedTrack.title = request.form['title']
-            print "title"
         if request.form['performer']:
             editedTrack.performer = request.form['performer']
-            print "performer"
         if request.form['album']:
             editedTrack.album = request.form['album']
         if request.form['track_number']:
@@ -71,7 +69,6 @@ def editTrack(track_id):
             editedTrack.path = request.form['path']
         if request.form['transitions_to']:
             editedTrack.transitions_to = request.form['transitions_to']
-            print "transitions to"
         # session.add(editedTrack)
         session.commit()
         return redirect(url_for('listTracks'))
@@ -294,14 +291,32 @@ def albumDetails(album_id):
     return render_template('albumDetails.html', album = album,
         tracks = album_tracks)
 
+# Pick a random album to play
 @app.route('/album/random/')
 def playRandomAlbum():
     album_count = session.query(Album).count()
-    found = 0
+    if album_count == 0:
+        print "No albums found in database"
+        return render_template('home.html',
+            error = "No albums found in database")
+    found = False
     # make sure we send a valid album id
-    while found == 0:
+    while found == False:
         random_index = randrange(0, album_count)
-        found = session.query(Album).filter_by(id = random_index).count()
+        album_count = session.query(Album).filter_by(id = random_index).count()
+        if album_count > 0:
+            album = session.query(Album).filter_by(id = random_index).one()
+            # Was this played recently?
+            # Check the first track (this is a hack)
+            track_one = album.tracks[0]
+            if (not (wasPlayedRecently(track_one))):
+                found = True
+            else:
+                print "Album played too recently: %s" % album.title
+        else:
+            print "random album not found"
+            continue
+
     return redirect(url_for('playAlbum',
         album_id = random_index,
         random = True))
@@ -378,20 +393,9 @@ def playTagTracks(tag_id):
             continue
         # Check here for rating and last played
         # rating = track.rating
-        if track.last_played:
-            difference = datetime.datetime.now().date() - track.last_played
-            recent_limit = timedelta(days = 14)
-            # TODO: Need to store this in the database, not hard-coded
-            if (difference > recent_limit):
-                # skip low-rated tracks
-                if (not (track.rating == 1 or track.rating == 2)):
-                    track_list.append(track)
-                '''else:
-                    print "Track %s not added due to rating %s" % (track.title, track.rating)
-            else:
-                print "Track %s played too recently, not adding" % track.title'''
+        if wasPlayedRecently(track):
+            pass
         else:
-            # Has never been played
             track_list.append(track)
     return render_template('playAlbum.html', tracks = shuffle(track_list),
         album_title = tag.name)
@@ -423,7 +427,6 @@ def test():
 
 @app.route('/_ajax_edit_track')
 def updateTrack():
-    print "Editing track"
     # Get the track ID from the AJAX request
     track_id = request.args.get('track_id')
     # Get the track object from the DB
@@ -453,7 +456,6 @@ def updateTrack():
 
     # print json_response['all_tags']
     json_response['selected_tags'] = selected_tags
-    print "Returning track data for editing:"
     # print (json_response)
     return jsonify(json_response)
 
@@ -495,8 +497,6 @@ def saveTrack():
                 session.add(tag_track)
         session.commit()
 
-    # new_times_played = request.args.get('times_played')
-    print "Saving changes to track # %s name %s rating %s" % (track_id, new_title, new_rating)
     if (changed):
         # session.add(track)
         session.commit()
@@ -515,7 +515,6 @@ def trackPlayed():
 
 # Scan a directory for music files
 def recurse(path, artist_set, album_set):
-    print "Scanning path " + path
     file_list = os.listdir(path)
     for file in file_list:
         if file.endswith('.mp3'):
@@ -648,6 +647,16 @@ def isNotEmptyString(s):
         return True
     else:
         return False
+
+# Was this track played recently?
+def wasPlayedRecently(track):
+    if track.last_played:
+        difference = datetime.datetime.now().date() - track.last_played
+        recent_limit = timedelta(days = 14) # TODO: Need to store this in the database, not hard-coded
+        if (difference < recent_limit):
+            return True
+    return False
+
 
 # Shuffle playlist (Fisher-Yates)
 def shuffle(tracks):
