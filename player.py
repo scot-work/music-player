@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, jsonify
 from sqlalchemy import create_engine, exists, and_
 from sqlalchemy.orm import sessionmaker
-from database_setup import Base, Track, Performer, Album, Tag, Tag_Track
+from database_setup import Base, Track, Performer, Album, Tag, Tag_Track, Membership
 from mutagen import File
 from mutagen.mp3 import MP3
 from mutagen.easyid3 import EasyID3
@@ -184,7 +184,23 @@ def deletePerformer(performer_id):
 @app.route('/performer/<int:performer_id>/play/')
 def playPerformer(performer_id):
     performer = session.query(Performer).filter_by(id = performer_id).one()
+    related_performers = session.query(Membership).filter_by(
+        p_group = performer.id)
+    related_groups = session.query(Membership).filter_by(
+        p_individual = performer.id)
     tracks = session.query(Track).filter_by(performer = performer_id).all()
+    if related_performers:
+        for related_performer in related_performers:
+            print "Adding tracks from related individual %s" % related_performer.p_individual
+            related_tracks = session.query(Track).filter_by(
+                performer = related_performer.p_individual).all()
+            tracks = tracks + related_tracks
+    if related_groups:
+        for related_group in related_groups:
+            print "Adding tracks from related group %s" % related_group.p_group
+            related_tracks = session.query(Track).filter_by(
+                performer = related_group.p_group).all()
+            tracks = tracks + related_tracks
     return render_template('playAlbum.html', tracks = shuffle(tracks),
         album_title = performer.name)
 
@@ -294,15 +310,10 @@ def albumDetails(album_id):
 # Pick a random album to play
 @app.route('/album/random/')
 def playRandomAlbum():
-    album_count = session.query(Album).count()
-    if album_count == 0:
-        print "No albums found in database"
-        return render_template('home.html',
-            error = "No albums found in database")
+    albums_in_database = session.query(Album).count()
     found = False
-    # make sure we send a valid album id
     while found == False:
-        random_index = randrange(0, album_count)
+        random_index = randrange(0, albums_in_database)
         album_count = session.query(Album).filter_by(id = random_index).count()
         if album_count > 0:
             album = session.query(Album).filter_by(id = random_index).one()
@@ -407,6 +418,51 @@ def removeTagFromTrack(tag_id, track_id):
     session.delete(tagged_track)
     session.commit()
     return redirect(url_for('listTagTracks', tag_id = tag_id))
+
+@app.route('/membership/')
+def listMembership():
+    memberships = session.query(Membership).order_by(Membership.p_group).all()
+    groups = []
+    for membership in memberships:
+        print "Group: %s Member: %s" % (membership.p_group, membership.p_individual)
+        group = session.query(Performer).filter_by(id = membership.p_group).one()
+        members = session.query(Performer).filter_by(
+            id = membership.p_individual).all()
+        groups.append(group.name)
+
+    return render_template("listMemberships.html", memberships = groups)
+
+# Create a new member/group relationship
+@app.route('/membership/new/', methods=['GET', 'POST'])
+def newMembership():
+    if request.method == 'POST':
+        if request.form['group']:
+            if request.form['members']:
+                group = request.form.get('group')
+                members = request.form.getlist('members')
+                for member in members:
+                    print "Adding member %s to group %s" % (member, group)
+                    # is this person already in the group?
+                    count = session.query(Membership).filter(
+                        and_(Membership.p_group == group,
+                            Membership.p_individual == member)).count()
+                    if count == 0:
+                        # Add the person to the group
+                        membership = Membership(p_individual = member,
+                        p_group = group)
+                        session.add(membership)
+                    else:
+                        print "Membership already exists"
+            else: print "no members found"
+        else:
+            print "no group found"
+        session.commit()
+        memberships = session.query(Membership).all()
+        return render_template("listMemberships.html", memberships = memberships)
+    else:
+        # Need to send list of all performers
+        performers = session.query(Performer).order_by(Performer.sort_name)
+        return render_template('newMembership.html', performers = performers)
 
 # Scan for tracks
 @app.route('/scan/')

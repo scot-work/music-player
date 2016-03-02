@@ -59,6 +59,13 @@ class Tag_Track(Base):
     tag = Column(Integer, ForeignKey('tag.id'))
     track = Column(Integer, ForeignKey('track.id'))
 
+class Membership(Base):
+    __tablename__ = 'membership'
+
+    id = Column(Integer, primary_key=True)
+    p_individual = Column(Integer, ForeignKey('performer.id'))
+    p_group = Column(Integer, ForeignKey('performer.id'))
+
 engine = create_engine('sqlite:///music_player.db')
 
 Base.metadata.create_all(engine)
