@@ -93,7 +93,7 @@ def deleteTrack(track_id):
 @app.route('/track/unrated/')
 def playUnratedTracks():
     track_list = session.query(Track).filter_by(rating = 0).limit(15)
-    return render_template('playAlbum.html', tracks = track_list)
+    return render_template('playTracks.html', tracks = track_list)
 
 # List performers
 @app.route('/performer/')
@@ -201,7 +201,7 @@ def playPerformer(performer_id):
             related_tracks = session.query(Track).filter_by(
                 performer = related_group.p_group).all()
             tracks = tracks + related_tracks
-    return render_template('playAlbum.html', tracks = shuffle(tracks),
+    return render_template('playTracks.html', tracks = shuffle(tracks),
         album_title = performer.name)
 
 # Browse file system
@@ -343,7 +343,7 @@ def playAlbum(album_id):
         album_tracks = session.query(Track).filter_by(album
             = album_id).order_by(Track.track_number)
 
-        return render_template('playAlbum.html',
+        return render_template('playTracks.html',
             tracks = album_tracks,
             album_title = album.title,
             album_year = album.year,
@@ -408,7 +408,7 @@ def playTagTracks(tag_id):
             pass
         else:
             track_list.append(track)
-    return render_template('playAlbum.html', tracks = shuffle(track_list),
+    return render_template('playTracks.html', tracks = shuffle(track_list),
         album_title = tag.name)
 
 @app.route('/tag/<int:tag_id>/track/<int:track_id>/remove/')
