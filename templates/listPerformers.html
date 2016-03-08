@@ -24,10 +24,10 @@
     <ul>
     {% for performer in performers %}
     <li>{{ performer.sort_name }}<br />
-        <a href="{{ url_for('editPerformer', performer_id = performer.id) }}"><button type="button">Edit</button></a>&nbsp;
-        <a href="{{ url_for('tagAllPerformerTracks', performer_id = performer.id) }}"><button type="button">Tag All Performer Tracks</button></a>&nbsp;
-        <a href="{{ url_for('deletePerformer', performer_id = performer.id) }}"><button type="button">Delete</button></a>&nbsp;
-        <a href="{{ url_for('playPerformer', performer_id = performer.id) }}">Play</a>
+        <a href="{{ url_for('editPerformer', performer_id = performer.id) }}"><button type = "button">Edit</button></a>&nbsp;
+        <a href="{{ url_for('tagAllPerformerTracks', performer_id = performer.id) }}"><button type = "button">Tag All Performer Tracks</button></a>&nbsp;
+        <a href="{{ url_for('deletePerformer', performer_id = performer.id) }}"><button type = "button">Delete</button></a>&nbsp;
+        <a href="{{ url_for('playPerformer', performer_id = performer.id) }}"><button type = "button">Play</button></a>
     </li>
     {% endfor %}
     </ul>

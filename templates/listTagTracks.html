@@ -20,9 +20,8 @@
     <ul>
         {% for track in tracks %}
         <li>
-            {{ track.title }}&nbsp;
-            <a href="{{ url_for('removeTagFromTrack', tag_id = tag.id, track_id = track.id) }}"><button type="button">Remove tag</button>
-            </a>
+            <a href="{{ url_for('removeTagFromTrack', tag_id = tag.id, track_id = track.id) }}"><button type="button">Remove tag</button></a>
+            &nbsp;{{ track.title }}
         </li>
         {% endfor %}
     </ul>

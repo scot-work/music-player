@@ -9,8 +9,8 @@
     {% endblock %}
     {% block navigation %}
     <ul class="subnav">
-        <li><a href="{{ url_for('listLibrary') }}" class = "selected">Library</a></li>
-        <li><a href = "{{ url_for('playRandomAlbum')}}">Random Album</a></li>
+        <li><a href = "{{ url_for('listLibrary') }}" class = "selected">Library</a></li>
+        <li><a href = "{{ url_for('playRandomAlbum') }}">Random Album</a></li>
         <li><a href = "{{ url_for('playTags') }}">Tag</a></li>
         <li><a href = "{{ url_for('playUnratedTracks') }}">Unrated</a></li>
     </ul>

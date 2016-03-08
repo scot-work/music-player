@@ -21,12 +21,14 @@
     <ul>
         {% for album in albums %}
         <li>
-            <a href="{{ url_for('editAlbum', album_id = album.id) }}">{{ album.title }}</a><br />
+            {{ album.title }}<br />
+            <a href = "{{ url_for('editAlbum', album_id = album.id) }}">
+                <button type = "button">Edit</button></a>
             <a href="{{ url_for('playAlbum', album_id = album.id) }}">
-                <button type="button">Play</button>
+                <button type = "button">Play</button>
             </a>
             <a href="{{ url_for('deleteAlbum', album_id = album.id) }}">
-                <button type="button">Delete</button>
+                <button type = "button">Delete</button>
             </a>
             </a>
             <a href = "{{ url_for('tagAlbum', album_id = album.id) }}"><button type = "button">Tag All Tracks</button></a>

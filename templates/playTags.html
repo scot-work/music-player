@@ -19,7 +19,8 @@
     <ul>
         {% for tag in tags %}
         <li>
-            <a href="{{ url_for('playTagTracks', tag_id = tag.id) }}">{{ tag.name }}</a>
+            <a href="{{ url_for('playTagTracks', tag_id = tag.id) }}"><button type = "button">Play</button></a>
+            &nbsp;{{ tag.name }}
         </li>
         {% endfor %}
     </ul>

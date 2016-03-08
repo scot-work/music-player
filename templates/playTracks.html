@@ -77,14 +77,12 @@
         $('#track_details').show();
         $('#track_title').val(track.title);
         $('#track_number').val(track.track_number);
-        // $('#times_played').text(track.times_played);
         $('#track_id').val(track.id);
-        // $("#last_played").text(track.last_played);
 
         // Send AJAX request
         $.getJSON('/_ajax_edit_track', { "track_id": track.id },
             function(data) {
-                // Get current track statistics
+            // Get current track statistics
             var track_title = data['title'];
             // var times_played = data['times_played'];
             // var last_played = data['last_played'];
@@ -99,9 +97,7 @@
             console.log("selected tags:");
             console.log(selected_tags);
             for (var i = 0; i < all_tags.length; i++) {
-
                 var current_tag = data["all_tags"][i];
-
                 if (selected_tags.indexOf(current_tag[1]) > 0) {
                     $('#tag_select').append($("<option selected></option>")
                         .attr("value", current_tag[0]).text(current_tag[1]));
@@ -178,7 +174,7 @@
             <input type = "text" name = "track_title" id = "track_title" size = 30 />
         <label for="track_number">Track #:&nbsp;</label>
             <input type = "text" name = "track_number" id = "track_number" size = 3 />
-        <div style = "float:left; margin-top:1em;"><label for="track_rating">Judgement:</label><br />
+        <div style = "float:left; margin-top:1em;"><label for="track_rating">Rating:</label><br />
         <select name = "track_rating" id = "track_rating" size = 4 >
             <option value = "1">Ridiculous</option>
             <option value = "2">Meh</option>

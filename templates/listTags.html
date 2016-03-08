@@ -20,7 +20,7 @@
     <p><a href="{{ url_for('newTag') }}"><button type="button">New</button></a></p>
     <ul>
         {% for tag in tags %}
-        <li><a href="{{ url_for('listTagTracks', tag_id = tag.id) }}">{{ tag.name }}</a></li>
+        <li><a href="{{ url_for('listTagTracks', tag_id = tag.id) }}"><button type = "button">List</button></a>&nbsp;{{ tag.name }}</li>
         {% endfor %}
     </ul>
 {% endblock %}
