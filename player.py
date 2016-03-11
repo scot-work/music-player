@@ -395,6 +395,7 @@ def listTagTracks(tag_id):
 def playTagsTracks():
     if request.method == "POST":
         track_list = []
+        to_remove = []
         mode = request.form['mode']
         print "Tag select mode is %s" % mode
         # Get tag IDs
@@ -438,15 +439,22 @@ def playTagsTracks():
                             pass
                         if ratingPass(track):
                             track_list.append(track)
+                            print "Adding %s" % track.title
                 else:
                     # Remove track if no match in tag_track
                     for track in track_list:
+                        print "Checking %s" % track.title
                         found = False
                         for tag_track in tag_tracks:
                             if track.id == tag_track.track:
                                 found = True
+                                print "Match: %s" % track.title
                         if not found:
-                            track_list.remove(track)
+                            print "Removing %s" % track.title
+                            to_remove.append(track)
+            for track in to_remove:
+                track_list.remove(track)
+        # return render_template('playTracks.html', tracks = track_list)
         return render_template('playTracks.html', tracks = shuffle(track_list))
 
 # Play all the tracks with the given tag
