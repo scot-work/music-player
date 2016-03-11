@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, jsonify
 from sqlalchemy import create_engine, exists, and_
 from sqlalchemy.orm import sessionmaker
-from database_setup import Base, Track, Performer, Album, Tag, Tag_Track, Membership
+from database_setup import Base, Track, Performer, Album, Tag, Tag_Track, Membership, Preferences
 from mutagen import File
 from mutagen.mp3 import MP3
 from mutagen.easyid3 import EasyID3
@@ -390,6 +390,65 @@ def listTagTracks(tag_id):
     return render_template('listTagTracks.html',
         tracks = track_list, tag = tag)
 
+# Play tracks based on multiple selected tracks (tag A or tag B)
+@app.route('/tags/play/', methods=['GET', 'POST'])
+def playTagsTracks():
+    if request.method == "POST":
+        track_list = []
+        mode = request.form['mode']
+        print "Tag select mode is %s" % mode
+        # Get tag IDs
+        checked_list = request.form.getlist('selected_tags')
+        if mode == "any":
+        # Find all tracks with any of the selected tags (OR)
+            # Repeat for each selected tag
+            for tag_id in checked_list:
+                tag_tracks = session.query(Tag_Track).filter_by(
+                    tag = tag_id).all()
+                for tag_track in tag_tracks:
+                    try:
+                        track = session.query(Track).filter_by(
+                            id = tag_track.track).one()
+                    except:
+                        print "Error: Track not found %s" % tag_track.track
+                        continue
+                    # Check here for rating and last played
+                    # rating = track.rating
+                    if wasPlayedRecently(track):
+                        pass
+                    if ratingPass(track):
+                        track_list.append(track)
+        else:
+        # Find only tracks with all of the selected tags
+            # Repeat for each selected tag
+            first_tag = True
+            for tag_id in checked_list:
+                tag_tracks = session.query(Tag_Track).filter_by(
+                    tag = tag_id).all()
+                if first_tag:
+                    # add all to list
+                    first_tag = False
+                    for tag_track in tag_tracks:
+                        try:
+                            track = session.query(Track).filter_by(
+                                id = tag_track.track).one()
+                        except:
+                            continue
+                        if wasPlayedRecently(track):
+                            pass
+                        if ratingPass(track):
+                            track_list.append(track)
+                else:
+                    # Remove track if no match in tag_track
+                    for track in track_list:
+                        found = False
+                        for tag_track in tag_tracks:
+                            if track.id == tag_track.track:
+                                found = True
+                        if not found:
+                            track_list.remove(track)
+        return render_template('playTracks.html', tracks = shuffle(track_list))
+
 # Play all the tracks with the given tag
 @app.route('/tag/<int:tag_id>/play/')
 def playTagTracks(tag_id):
@@ -424,8 +483,8 @@ def listMembership():
     memberships = session.query(Membership).order_by(Membership.p_group).all()
     groups = []
     for membership in memberships:
-        print "Group: %s Member: %s" % (membership.p_group, membership.p_individual)
-        group = session.query(Performer).filter_by(id = membership.p_group).one()
+        group = session.query(Performer).filter_by(
+            id = membership.p_group).one()
         members = session.query(Performer).filter_by(
             id = membership.p_individual).all()
         groups.append(group.name)
@@ -458,7 +517,8 @@ def newMembership():
             print "no group found"
         session.commit()
         memberships = session.query(Membership).all()
-        return render_template("listMemberships.html", memberships = memberships)
+        return render_template(
+            "listMemberships.html", memberships = memberships)
     else:
         # Need to send list of all performers
         performers = session.query(Performer).order_by(Performer.sort_name)
@@ -706,13 +766,25 @@ def isNotEmptyString(s):
 
 # Was this track played recently?
 def wasPlayedRecently(track):
+    # minimum_days = 14
+    minimum_days = session.query(Preferences).filter_by(id = 1).one().recent_minimum
     if track.last_played:
         difference = datetime.datetime.now().date() - track.last_played
-        recent_limit = timedelta(days = 14) # TODO: Need to store this in the database, not hard-coded
+        recent_limit = timedelta(days = minimum_days) # TODO: Need to store this in the database, not hard-coded
         if (difference < recent_limit):
             return True
     return False
 
+# Does this track suck?
+def ratingPass(track):
+    # minimum_rating = 3
+    minimum_rating = session.query(Preferences).filter_by(id = 1).one().rating_minimum
+    if track.rating == 0:
+        # not yet rated
+        return True
+    if track.rating < minimum_rating:
+        return False
+    return True
 
 # Shuffle playlist (Fisher-Yates)
 def shuffle(tracks):

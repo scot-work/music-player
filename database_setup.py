@@ -66,6 +66,13 @@ class Membership(Base):
     p_individual = Column(Integer, ForeignKey('performer.id'))
     p_group = Column(Integer, ForeignKey('performer.id'))
 
+class Preferences(Base):
+    __tablename__ = 'preferences'
+
+    id = Column(Integer, primary_key=True)
+    recent_minimum = Column(Integer)
+    rating_minimum = Column(Integer)
+
 engine = create_engine('sqlite:///music_player.db')
 
 Base.metadata.create_all(engine)

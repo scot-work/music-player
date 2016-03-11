@@ -15,13 +15,20 @@
     </ul>
     {% endblock %}
     {% block left %}
-    <h1>Tag list</h1>
-    <ul>
+    <h1>Select Tags to Play</h1>
+    <form action = "{{ url_for('playTagsTracks') }}" method = "post">
+        <fieldset><legend>Mode</legend>
+        <input type = "radio" name = "mode" value = "any" id  = "any" checked = "checked" />
+        <label for = "any">Tracks with any selected tag</label><br />
+        <input type = "radio" name = "mode" value = "all" id  = "all" />
+        <label for = "all">Tracks with all selected tags</label>
+        </fieldset>
+        <fieldset><legend>Tags</legend>
         {% for tag in tags %}
-        <li>
-            <a href="{{ url_for('playTagTracks', tag_id = tag.id) }}"><button type = "button">Play</button></a>
-            &nbsp;{{ tag.name }}
-        </li>
+        <input type = "checkbox" id = "{{ tag.id }}" value = "{{ tag.id }}" name = "selected_tags" />
+        <label for = "{{ tag.id }}">{{ tag.name }}</label>&nbsp;
         {% endfor %}
-    </ul>
+        </fieldset>
+    <br /><input type = "submit" value = "Submit" />
+    </form>
 {% endblock %}
