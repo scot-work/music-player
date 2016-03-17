@@ -332,6 +332,7 @@ def playRandomAlbum():
         album_id = random_index,
         random = True))
 
+# Play an album
 @app.route('/album/<int:album_id>/play/')
 def playAlbum(album_id):
     # Get album based on ID
@@ -531,6 +532,21 @@ def newMembership():
         # Need to send list of all performers
         performers = session.query(Performer).order_by(Performer.sort_name)
         return render_template('newMembership.html', performers = performers)
+
+# Update preferences
+@app.route('/preferences/', methods = ['GET', 'POST'])
+def editPreferences():
+    preferences = session.query(Preferences).filter_by(id = 1).one()
+    if request.method == 'POST':
+        if request.form['rating']:
+            preferences.rating_minimum = request.form['rating']
+        if request.form['recent']:
+            preferences.recent_minimum = request.form['recent']
+        session.commit()
+        return render_template('home.html')
+    if request.method == 'GET':
+        print "Preferences: %s %s" % (preferences.rating_minimum, preferences.recent_minimum)
+        return render_template('editPreferences.html', preferences = preferences)
 
 # Scan for tracks
 @app.route('/scan/')

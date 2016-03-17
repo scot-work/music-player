@@ -55,7 +55,7 @@
             var item = document.createElement("li");
             item.id = "track_" + track{{ track.id }}.id;
             var html_title = "{{ track.title }}".replace("&#39;", "\u2019");
-            var textnode = document.createTextNode(html_title);
+            var textnode = document.createTextNode(html_title + " ({{ track.rating }})");
             item.appendChild(textnode);
             $("#track_list").append(item);
 
