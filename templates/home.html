@@ -14,12 +14,15 @@
     </ul>
     <h2>Organize</h2>
     <ul>
-         <li><a href="{{ url_for('listPerformers') }}">List Performers</a></li>
-         <li><a href="{{ url_for('listAlbums') }}">List Albums</a></li>
-         <li><a href="{{ url_for('listTags') }}">List Tags</a></li>
-         <li><a href="{{ url_for('listTracks') }}">List Tracks</a></li>
+         <li><a href = "{{ url_for('listPerformers') }}">List Performers</a></li>
+         <li><a href = "{{ url_for('listAlbums') }}">List Albums</a></li>
+         <li><a href = "{{ url_for('listTags') }}">List Tags</a></li>
+         <li><a href = "{{ url_for('listTracks') }}">List Tracks</a></li>
     </ul>
 
     <h3>Scan</h3>
+    <h3>Preferences</h3>
+    <ul><li><a href = "/preferences/">Change preferences</a></li>
+    </ul>
 
     {% endblock %}
