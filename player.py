@@ -8,6 +8,8 @@ from mutagen.easyid3 import EasyID3
 import os, random, json, string, datetime, operator
 from datetime import timedelta
 from random import randrange
+import logging
+
 
 app = Flask(__name__)
 
@@ -16,6 +18,12 @@ engine = create_engine('sqlite:///music_player.db')
 Base.metadata.bind = engine
 DBSession = sessionmaker(bind = engine)
 session = DBSession()
+
+# Check if logging is working
+logging.basicConfig(filename='music_player.log',level=logging.DEBUG)
+logging.debug('Starting with DEBUG logging')
+# logging.info('So should this')
+# logging.warning('And this, too')
 
 # Home page
 @app.route('/')
@@ -191,13 +199,13 @@ def playPerformer(performer_id):
     tracks = session.query(Track).filter_by(performer = performer_id).all()
     if related_performers:
         for related_performer in related_performers:
-            print "Adding tracks from related individual %s" % related_performer.p_individual
+            logging.info("Adding tracks from related individual %s" % related_performer.p_individual)
             related_tracks = session.query(Track).filter_by(
                 performer = related_performer.p_individual).all()
             tracks = tracks + related_tracks
     if related_groups:
         for related_group in related_groups:
-            print "Adding tracks from related group %s" % related_group.p_group
+            logging.info("Adding tracks from related group %s" % related_group.p_group)
             related_tracks = session.query(Track).filter_by(
                 performer = related_group.p_group).all()
             tracks = tracks + related_tracks
@@ -325,7 +333,7 @@ def playRandomAlbum():
             else:
                 print "Album played too recently: %s" % album.title
         else:
-            print "random album not found"
+            logging.warning("random album not found")
             continue
 
     return redirect(url_for('playAlbum',
@@ -649,7 +657,8 @@ def trackPlayed():
     track = session.query(Track).filter_by(id = track_id).one()
     track.last_played = datetime.datetime.now()
     track.times_played = track.times_played + 1
-    # print "updating track history for %s" % track.title
+    logging.info("updating track history for %s" % track.title)
+    logging.info("last played %s, played %s times" % (track.last_played, track.times_played))
     session.commit()
     return jsonify(response = "Updated track history")
 
@@ -790,13 +799,17 @@ def isNotEmptyString(s):
 
 # Was this track played recently?
 def wasPlayedRecently(track):
-    # minimum_days = 14
+    logging.debug("Checking if track was played recently")
     minimum_days = session.query(Preferences).filter_by(id = 1).one().recent_minimum
     if track.last_played:
         difference = datetime.datetime.now().date() - track.last_played
-        recent_limit = timedelta(days = minimum_days) # TODO: Need to store this in the database, not hard-coded
+        recent_limit = timedelta(days = minimum_days)
         if (difference < recent_limit):
+            logging.debug("Track was played recently")
+            logging.debug("last played was %s" % difference)
             return True
+    else:
+        logging.warning("last_played not found for track")
     return False
 
 # Does this track suck?
