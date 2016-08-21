@@ -331,7 +331,7 @@ def playRandomAlbum():
             if (not (wasPlayedRecently(track_one))):
                 found = True
             else:
-                print "Album played too recently: %s" % album.title
+                logging.info("Album played too recently: %s" % album.title)
         else:
             logging.warning("random album not found")
             continue
@@ -429,7 +429,7 @@ def playTagsTracks():
                     if ratingPass(track):
                         track_list.append(track)
         else:
-        # Find only tracks with all of the selected tags
+            # Find only tracks with all of the selected tags
             # Repeat for each selected tag
             first_tag = True
             for tag_id in checked_list:
@@ -452,14 +452,11 @@ def playTagsTracks():
                 else:
                     # Remove track if no match in tag_track
                     for track in track_list:
-                        print "Checking %s" % track.title
                         found = False
                         for tag_track in tag_tracks:
                             if track.id == tag_track.track:
                                 found = True
-                                print "Match: %s" % track.title
                         if not found:
-                            print "Removing %s" % track.title
                             to_remove.append(track)
             for track in to_remove:
                 track_list.remove(track)
@@ -799,15 +796,18 @@ def isNotEmptyString(s):
 
 # Was this track played recently?
 def wasPlayedRecently(track):
-    logging.debug("Checking if track was played recently")
+    logging.debug("Checking if %s was played recently" % track.title)
     minimum_days = session.query(Preferences).filter_by(id = 1).one().recent_minimum
     if track.last_played:
         difference = datetime.datetime.now().date() - track.last_played
+        logging.debug("Track was played %s days ago" % difference)
         recent_limit = timedelta(days = minimum_days)
         if (difference < recent_limit):
             logging.debug("Track was played recently")
-            logging.debug("last played was %s" % difference)
             return True
+        else:
+            logging.debug("Track was not played recently.")
+            return False
     else:
         logging.warning("last_played not found for track")
     return False
